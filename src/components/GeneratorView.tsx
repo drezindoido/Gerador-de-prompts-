@@ -34,7 +34,12 @@ const GeneratorView = ({ isPremiumUser, selectedCharacter }: GeneratorViewProps)
 
   const generatePrompt = () => {
     const selectedChar = characters.find((c) => c.id === character);
-    if (!selectedChar) return;
+    console.log("Generate clicked - character:", character, "selectedChar:", selectedChar);
+    
+    if (!selectedChar) {
+      toast.error("Selecione um personagem primeiro!");
+      return;
+    }
 
     const prompt = `${style} image of ${selectedChar.name}, ${selectedChar.age} years old, ${selectedChar.country}, in a ${location.toLowerCase()}, ${camera.toLowerCase()} style, ${emotion.toLowerCase()} expression, wearing ${outfit}, natural skin texture, detailed lighting, professional quality, 8K resolution.`;
     
