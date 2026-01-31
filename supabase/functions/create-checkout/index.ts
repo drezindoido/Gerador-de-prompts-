@@ -69,13 +69,13 @@ serve(async (req) => {
 
     const origin = req.headers.get("origin") || "https://prompt-muse-studio-67.lovable.app";
     
-    // KAIZEN PROMPTS Premium - price_1SqfH53ZOs74TcRjyIWhALkT
+    // KAIZEN PROMPTS Premium - R$19,50/mês
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [
         {
-          price: "price_1SqfH53ZOs74TcRjyIWhALkT",
+          price: "price_1SuP8k3ZOs74TcRj9m5gz0ts",
           quantity: 1,
         },
       ],
