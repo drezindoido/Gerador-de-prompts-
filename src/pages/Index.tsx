@@ -5,6 +5,7 @@ import CharactersView from "@/components/CharactersView";
 import GeneratorView from "@/components/GeneratorView";
 import PromptsView from "@/components/PromptsView";
 import PremiumView from "@/components/PremiumView";
+import AIChat from "@/components/AIChat";
 import type { Character } from "@/data/characters";
 import { toast } from "sonner";
 
@@ -83,6 +84,7 @@ const Index = () => {
           {renderContent()}
         </div>
       </main>
+      <AIChat />
     </div>
   );
 };
