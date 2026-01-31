@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Copy, Check, Sparkles } from "lucide-react";
+import { Copy, Check, Sparkles, Bot } from "lucide-react";
 import { 
   characters, 
   locations, 
@@ -10,6 +10,8 @@ import {
   type Character 
 } from "@/data/characters";
 import { toast } from "sonner";
+import AIPromptGenerator from "./AIPromptGenerator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface GeneratorViewProps {
   isPremiumUser: boolean;
@@ -65,7 +67,24 @@ const GeneratorView = ({ isPremiumUser, selectedCharacter }: GeneratorViewProps)
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <Tabs defaultValue="ai" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsTrigger value="ai" className="flex items-center gap-2">
+            <Bot size={16} />
+            Gerar com IA
+          </TabsTrigger>
+          <TabsTrigger value="manual" className="flex items-center gap-2">
+            <Sparkles size={16} />
+            Personalizar Manual
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="ai">
+          <AIPromptGenerator />
+        </TabsContent>
+
+        <TabsContent value="manual" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <label className="text-sm font-medium text-muted-foreground">
             Personagem
@@ -167,35 +186,37 @@ const GeneratorView = ({ isPremiumUser, selectedCharacter }: GeneratorViewProps)
             ))}
           </select>
         </div>
-      </div>
-
-      <button
-        onClick={generatePrompt}
-        className="btn-primary-glow w-full py-4 rounded-lg flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98]"
-      >
-        <Sparkles size={20} />
-        Gerar Prompt
-      </button>
-
-      {generatedPrompt && (
-        <div className="card-elevated p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">
-              Prompt Gerado
-            </span>
-            <button
-              onClick={copyToClipboard}
-              className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
-            >
-              {copied ? <Check size={16} /> : <Copy size={16} />}
-              {copied ? "Copiado!" : "Copiar"}
-            </button>
           </div>
-          <p className="text-foreground leading-relaxed bg-muted/50 p-4 rounded-lg">
-            {generatedPrompt}
-          </p>
-        </div>
-      )}
+
+          <button
+            onClick={generatePrompt}
+            className="btn-primary-glow w-full py-4 rounded-lg flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98]"
+          >
+            <Sparkles size={20} />
+            Gerar Prompt
+          </button>
+
+          {generatedPrompt && (
+            <div className="card-elevated p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-muted-foreground">
+                  Prompt Gerado
+                </span>
+                <button
+                  onClick={copyToClipboard}
+                  className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
+                >
+                  {copied ? <Check size={16} /> : <Copy size={16} />}
+                  {copied ? "Copiado!" : "Copiar"}
+                </button>
+              </div>
+              <p className="text-foreground leading-relaxed bg-muted/50 p-4 rounded-lg">
+                {generatedPrompt}
+              </p>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
