@@ -69,7 +69,7 @@ const CharacterCard = ({ character, isPremiumUser, onSelect }: CharacterCardProp
         </p>
         
         <p className="text-xs text-muted-foreground/80 line-clamp-2">
-          {character.description}
+          {character.desc}
         </p>
       </div>
     </div>
