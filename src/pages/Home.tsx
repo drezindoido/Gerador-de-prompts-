@@ -16,7 +16,7 @@ const Home = () => {
               <Sparkles className="w-12 h-12 text-white" />
             </div>
             <h1 className="text-5xl md:text-7xl font-bold mb-4">
-              <span className="purple-gradient-text">KAIZEN</span>
+              <span className="warm-gradient-text">KAIZEN</span>
               <span className="text-foreground"> PROMPTS</span>
             </h1>
           </div>

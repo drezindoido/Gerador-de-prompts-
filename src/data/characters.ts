@@ -1,28 +1,188 @@
-export interface Character {
-  id: string;
-  name: string;
-  age: number;
-  country: string;
-  isPremium: boolean;
-  description: string;
-}
+import { Character, Category } from "@/types";
+
+export type { Character, Category };
 
 export const characters: Character[] = [
-  { id: "1", name: "Kaizen", age: 24, country: "Brasil", isPremium: false, description: "Energetic and bold, perfect for lifestyle content" },
-  { id: "2", name: "Aiko", age: 22, country: "Japão", isPremium: false, description: "Elegant and serene with delicate features" },
-  { id: "3", name: "Luna", age: 26, country: "Espanha", isPremium: false, description: "Passionate and expressive Mediterranean beauty" },
-  { id: "4", name: "Maya", age: 25, country: "Índia", isPremium: false, description: "Graceful with striking traditional aesthetics" },
-  { id: "5", name: "Sofia", age: 23, country: "Itália", isPremium: false, description: "Classic beauty with modern flair" },
-  { id: "6", name: "Irina", age: 28, country: "Rússia", isPremium: true, description: "Sophisticated and mysterious allure" },
-  { id: "7", name: "Yara", age: 27, country: "Líbano", isPremium: true, description: "Exotic beauty with captivating eyes" },
-  { id: "8", name: "Helena", age: 35, country: "Alemanha", isPremium: true, description: "Mature elegance and refined style" },
-  { id: "9", name: "Camila", age: 32, country: "Colômbia", isPremium: true, description: "Vibrant and full of life energy" },
-  { id: "10", name: "Nina", age: 41, country: "França", isPremium: true, description: "Timeless Parisian sophistication" },
-  { id: "11", name: "Akemi", age: 50, country: "Japão", isPremium: true, description: "Ageless beauty with wisdom" },
-  { id: "12", name: "Rosa", age: 48, country: "Bolívia", isPremium: true, description: "Warm and nurturing presence" },
-  { id: "13", name: "Tatiana", age: 45, country: "Rússia", isPremium: true, description: "Commanding presence with grace" },
-  { id: "14", name: "Liu", age: 38, country: "China", isPremium: true, description: "Ethereal and poised beauty" },
-  { id: "15", name: "Amara", age: 42, country: "Nigéria", isPremium: true, description: "Radiant queen with powerful aura" },
+  { 
+    id: "1", 
+    name: "Kaizen", 
+    age: 24, 
+    country: "Brasil", 
+    hair: "Dark brown, wavy, shoulder-length",
+    eyes: "Deep brown, almond-shaped",
+    style: "Casual chic, earth tones",
+    desc: "Energetic and bold, perfect for lifestyle content", 
+    isPremium: false,
+    rules: ["Natural lighting preferred", "Warm color palette", "Authentic expressions"]
+  },
+  { 
+    id: "2", 
+    name: "Aiko", 
+    age: 22, 
+    country: "Japão", 
+    hair: "Straight black, long with bangs",
+    eyes: "Dark brown, soft gaze",
+    style: "Minimalist Japanese aesthetic",
+    desc: "Elegant and serene with delicate features", 
+    isPremium: false,
+    rules: ["Soft diffused light", "Clean backgrounds", "Subtle expressions"]
+  },
+  { 
+    id: "3", 
+    name: "Luna", 
+    age: 26, 
+    country: "Espanha", 
+    hair: "Dark auburn, thick curls",
+    eyes: "Hazel with golden flecks",
+    style: "Mediterranean bohemian",
+    desc: "Passionate and expressive Mediterranean beauty", 
+    isPremium: false,
+    rules: ["Golden hour lighting", "Warm tones", "Expressive poses"]
+  },
+  { 
+    id: "4", 
+    name: "Maya", 
+    age: 25, 
+    country: "Índia", 
+    hair: "Jet black, long and silky",
+    eyes: "Dark brown, intense",
+    style: "Traditional meets modern",
+    desc: "Graceful with striking traditional aesthetics", 
+    isPremium: false,
+    rules: ["Rich jewel tones", "Ornate details welcome", "Regal posture"]
+  },
+  { 
+    id: "5", 
+    name: "Sofia", 
+    age: 23, 
+    country: "Itália", 
+    hair: "Chestnut brown, loose waves",
+    eyes: "Green-gray, expressive",
+    style: "Italian elegance",
+    desc: "Classic beauty with modern flair", 
+    isPremium: false,
+    rules: ["Natural beauty emphasis", "Effortless style", "Confident expressions"]
+  },
+  { 
+    id: "6", 
+    name: "Irina", 
+    age: 28, 
+    country: "Rússia", 
+    hair: "Platinum blonde, sleek",
+    eyes: "Ice blue, piercing",
+    style: "High fashion editorial",
+    desc: "Sophisticated and mysterious allure", 
+    isPremium: true,
+    rules: ["Dramatic lighting", "Cool color palette", "Strong angular poses"]
+  },
+  { 
+    id: "7", 
+    name: "Yara", 
+    age: 27, 
+    country: "Líbano", 
+    hair: "Dark brown, voluminous",
+    eyes: "Deep green, captivating",
+    style: "Middle Eastern glamour",
+    desc: "Exotic beauty with captivating eyes", 
+    isPremium: true,
+    rules: ["Gold accents welcome", "Smoky eye makeup", "Luxurious settings"]
+  },
+  { 
+    id: "8", 
+    name: "Helena", 
+    age: 35, 
+    country: "Alemanha", 
+    hair: "Ash blonde, bob cut",
+    eyes: "Steel gray, confident",
+    style: "Sophisticated minimalist",
+    desc: "Mature elegance and refined style", 
+    isPremium: true,
+    rules: ["Clean lines", "Neutral palette", "Professional settings"]
+  },
+  { 
+    id: "9", 
+    name: "Camila", 
+    age: 32, 
+    country: "Colômbia", 
+    hair: "Dark brown, long layers",
+    eyes: "Warm brown, friendly",
+    style: "Vibrant and colorful",
+    desc: "Vibrant and full of life energy", 
+    isPremium: true,
+    rules: ["Bold colors welcome", "Dynamic poses", "Joyful expressions"]
+  },
+  { 
+    id: "10", 
+    name: "Nina", 
+    age: 41, 
+    country: "França", 
+    hair: "Salt and pepper, chic bob",
+    eyes: "Brown, wise",
+    style: "Parisian sophistication",
+    desc: "Timeless Parisian sophistication", 
+    isPremium: true,
+    rules: ["Classic French aesthetic", "Understated elegance", "Confident presence"]
+  },
+  { 
+    id: "11", 
+    name: "Akemi", 
+    age: 50, 
+    country: "Japão", 
+    hair: "Silver-streaked black, elegant updo",
+    eyes: "Dark brown, serene",
+    style: "Traditional Japanese elegance",
+    desc: "Ageless beauty with wisdom", 
+    isPremium: true,
+    rules: ["Graceful poses", "Traditional elements", "Serene expressions"]
+  },
+  { 
+    id: "12", 
+    name: "Rosa", 
+    age: 48, 
+    country: "Bolívia", 
+    hair: "Gray-streaked brown, natural",
+    eyes: "Warm brown, nurturing",
+    style: "Earth mother aesthetic",
+    desc: "Warm and nurturing presence", 
+    isPremium: true,
+    rules: ["Natural textures", "Earthy colors", "Genuine warmth"]
+  },
+  { 
+    id: "13", 
+    name: "Tatiana", 
+    age: 45, 
+    country: "Rússia", 
+    hair: "Dark red, sophisticated style",
+    eyes: "Gray-green, commanding",
+    style: "Power elegance",
+    desc: "Commanding presence with grace", 
+    isPremium: true,
+    rules: ["Strong silhouettes", "Rich colors", "Authoritative poses"]
+  },
+  { 
+    id: "14", 
+    name: "Liu", 
+    age: 38, 
+    country: "China", 
+    hair: "Black, sleek and shiny",
+    eyes: "Dark brown, mysterious",
+    style: "Modern Asian fusion",
+    desc: "Ethereal and poised beauty", 
+    isPremium: true,
+    rules: ["Soft lighting", "Flowing fabrics", "Graceful movements"]
+  },
+  { 
+    id: "15", 
+    name: "Amara", 
+    age: 42, 
+    country: "Nigéria", 
+    hair: "Natural coils, regal crown",
+    eyes: "Deep brown, powerful",
+    style: "African queen aesthetic",
+    desc: "Radiant queen with powerful aura", 
+    isPremium: true,
+    rules: ["Bold patterns", "Vibrant colors", "Regal presence"]
+  },
 ];
 
 export const locations = [
@@ -36,6 +196,8 @@ export const locations = [
   "Rooftop terrace",
   "Beach sunset",
   "Coffee shop",
+  "Street fashion",
+  "Mirror reflection",
 ];
 
 export const outfits = [
@@ -48,6 +210,7 @@ export const outfits = [
   "Casual denim and white tee",
   "Elegant evening dress",
   "Business casual",
+  "Cozy home attire",
 ];
 
 export const cameraStyles = [
@@ -57,6 +220,8 @@ export const cameraStyles = [
   "Candid lifestyle",
   "Ring light portrait",
   "Golden hour natural",
+  "Studio lighting",
+  "Natural window light",
 ];
 
 export const emotions = [
@@ -67,6 +232,8 @@ export const emotions = [
   "Sensual subtle",
   "Playful wink",
   "Dreamy gaze",
+  "Mysterious",
+  "Joyful",
 ];
 
 export const artStyles = [
@@ -75,6 +242,22 @@ export const artStyles = [
   "Anime realistic (hybrid)",
   "Cinematic film look",
   "Editorial fashion",
+  "Documentary style",
+  "Fine art portrait",
+];
+
+export const categories: Category[] = [
+  'All',
+  'Selfie',
+  'Bathroom',
+  'Bedroom',
+  'Kitchen',
+  'Street',
+  'Beauty',
+  'Lifestyle',
+  'Mirror',
+  'Mood',
+  'Car',
 ];
 
 export const readyPrompts = [
