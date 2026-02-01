@@ -1,15 +1,4 @@
-export type Category = 
-  | 'Selfie' 
-  | 'Bathroom' 
-  | 'Bedroom' 
-  | 'Kitchen' 
-  | 'Street' 
-  | 'Beauty' 
-  | 'Lifestyle' 
-  | 'Mirror' 
-  | 'Mood' 
-  | 'Car' 
-  | 'All';
+export type Category = 'Selfie' | 'Bathroom' | 'Bedroom' | 'Kitchen' | 'Street' | 'Beauty' | 'Lifestyle' | 'Mirror' | 'Mood' | 'Car' | 'All';
 
 export interface Prompt {
   id: string;
@@ -33,14 +22,4 @@ export interface Character {
   desc: string;
   isPremium: boolean;
   rules: string[];
-}
-
-// Legacy Character type for backward compatibility
-export interface LegacyCharacter {
-  id: string;
-  name: string;
-  age: number;
-  country: string;
-  isPremium: boolean;
-  description: string;
 }
