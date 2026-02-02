@@ -12,6 +12,13 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
+// Emails que devem ter acesso PRO permanente, independente do Stripe.
+// Obs: Mantemos a checagem no backend (não no cliente) para evitar bypass.
+const PRO_ALLOWLIST = new Set([
+  "dreeziin20@gmail.com",
+  "teamsp2011.aa@gmail.com",
+]);
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -43,6 +50,36 @@ serve(async (req) => {
     
     const user = userData.user;
     logStep("User authenticated", { userId: user.id, email: user.email });
+
+    // Bypass PRO (allowlist)
+    const email = (user.email ?? "").toLowerCase().trim();
+    if (PRO_ALLOWLIST.has(email)) {
+      logStep("Allowlist PRO: granting permanent access", { email });
+
+      const subscriptionEnd = "2099-12-31T23:59:59.000Z";
+
+      await supabaseClient
+        .from("profiles")
+        .update({
+          subscription_status: "active",
+          subscription_end: subscriptionEnd,
+        })
+        .eq("id", user.id);
+
+      return new Response(
+        JSON.stringify({
+          subscribed: true,
+          subscription_status: "active",
+          subscription_end: subscriptionEnd,
+          customer_id: null,
+          allowlist: true,
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        }
+      );
+    }
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
