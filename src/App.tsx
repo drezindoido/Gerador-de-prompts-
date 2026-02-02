@@ -13,6 +13,9 @@ import Premium from "./pages/Premium";
 import ComoUsar from "./pages/ComoUsar";
 import Conta from "./pages/Conta";
 import Admin from "./pages/Admin";
+import Generator from "./pages/Generator";
+import Marketplace from "./pages/Marketplace";
+import Characters from "./pages/Characters";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +37,9 @@ const App = () => (
               <Route path="/como-usar" element={<ComoUsar />} />
               <Route path="/conta" element={<Conta />} />
               <Route path="/admin" element={<Admin />} />
+              <Route path="/gerador" element={<Generator />} />
+              <Route path="/marketplace" element={<Marketplace />} />
+              <Route path="/personagens" element={<Characters />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
