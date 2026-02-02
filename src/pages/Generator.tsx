@@ -2,7 +2,7 @@ import { useState } from "react";
 import { 
   MapPin, Camera, Shirt, MessageSquarePlus, Settings2, Wand2, 
   Loader2, Lock, Code, MinusCircle, Hash, Sparkles, Bot,
-  BookOpen, Share2, Video, Ghost, Palette, Monitor, Tv, PenTool, X
+  BookOpen, Share2, Video, Ghost, Palette, Monitor, Tv, PenTool, X, Scroll
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -130,6 +130,19 @@ const Generator = () => {
   const handleSocial = () => handleExtraAction("Caption", `Crie uma legenda de Instagram envolvente em português para esta imagem.`);
   const handleTechSpecs = () => handleExtraAction("Tech Specs", `Liste as especificações técnicas de câmera, iluminação e pós-produção ideais para recriar esta cena.`);
   const handleRemix = (style: string) => handleExtraAction(`Remix: ${style}`, `Reescreva este prompt no estilo visual "${style}", mantendo a essência mas adaptando completamente a estética.`);
+  
+  const handleStoryGenerate = () => {
+    const storyPrompt = `Crie uma história curta do dia a dia do personagem "${character.name}" (${character.age} anos, ${character.country}). 
+A história deve:
+- Ser em português e ter 3-4 parágrafos
+- Descrever uma cena cotidiana interessante
+- Manter a personalidade e estilo do personagem: ${character.style}
+- Terminar com um gancho que permita continuação futura
+- Cada história deve poder se conectar com histórias anteriores do mesmo personagem
+
+Esta é uma versão teste, então inclua ao final uma sugestão de prompt de imagem que ilustre a cena principal da história.`;
+    handleExtraAction("História", storyPrompt);
+  };
 
   return (
     <div className="min-h-screen py-20 px-4">
@@ -312,6 +325,13 @@ const Generator = () => {
                     <h3 className="font-bold text-foreground">Creative Suite</h3>
                     <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Aumente o realismo</p>
                   </div>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                  <button onClick={handleStoryGenerate} disabled={isExtraLoading} className="p-4 bg-gradient-to-br from-primary/20 to-accent/20 border-2 border-primary rounded-2xl hover:border-accent text-left group col-span-2">
+                    <Scroll size={18} className="text-primary group-hover:text-accent mb-3" />
+                    <span className="block text-[10px] font-bold uppercase tracking-widest text-foreground">Gerar História</span>
+                    <span className="block text-[9px] text-muted-foreground mt-1">Histórias do dia a dia do personagem</span>
+                  </button>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   <button onClick={handleLore} disabled={isExtraLoading} className="p-4 bg-background border border-border rounded-2xl hover:border-primary text-left group">
