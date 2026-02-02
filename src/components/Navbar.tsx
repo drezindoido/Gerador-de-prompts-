@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Sparkles, Crown, User, LogOut, Settings } from "lucide-react";
+import { Menu, X, Crown, User, LogOut, Settings, Database } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
@@ -11,35 +11,40 @@ const Navbar = () => {
   const isActive = (path: string) => location.pathname === path;
 
   const navLinks = [
-    { path: "/", label: "Home" },
-    { path: "/prompts", label: "Prompts" },
+    { path: "/", label: "Início" },
+    { path: "/gerador", label: "Gerador" },
+    { path: "/marketplace", label: "Marketplace" },
+    { path: "/personagens", label: "Personagens" },
     { path: "/como-usar", label: "Como Usar" },
   ];
 
+  const tierLabel = subscription?.subscribed ? "PRO" : "FREE";
+  const tierColor = subscription?.subscribed ? "text-primary" : "text-muted-foreground";
+
   return (
-    <nav className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-6">
+    <nav className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-xl">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
+          <Link to="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-foreground rounded-lg flex items-center justify-center text-background font-bold italic shadow-lg shadow-black/20">
+              K
             </div>
-            <span className="text-xl font-bold hidden sm:block">
-              <span className="purple-gradient-text">KAIZEN</span>
+            <span className="text-xl font-bold tracking-tight text-foreground editorial-spacing">
+              KAIZEN <span className="font-light text-muted-foreground">PROMPTS</span>
             </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-1">
+          <div className="hidden md:flex items-center space-x-6">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
-                className={`px-4 py-2 rounded-lg transition-colors ${
-                  isActive(link.path)
-                    ? "bg-primary/20 text-primary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                className={`text-[10px] font-bold uppercase tracking-widest transition-all ${
+                  isActive(link.path) 
+                    ? 'text-foreground border-b-2 border-foreground pb-1' 
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {link.label}
@@ -49,19 +54,33 @@ const Navbar = () => {
             {!subscription?.subscribed && (
               <Link
                 to="/premium"
-                className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors ${
-                  isActive("/premium")
-                    ? "bg-amber-500/20 text-amber-500"
-                    : "text-amber-500 hover:bg-amber-500/10"
+                className={`text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-1 ${
+                  isActive("/premium") 
+                    ? 'text-primary border-b-2 border-primary pb-1' 
+                    : 'text-primary hover:opacity-80'
                 }`}
               >
-                <Crown size={18} />
+                <Crown size={12} />
                 Premium
               </Link>
             )}
+            
+            {user && (
+              <div className="flex items-center gap-3 pl-4 border-l border-border">
+                <Database size={14} className="text-green-500" />
+                <div className="flex flex-col text-right">
+                  <span className="text-[10px] font-bold text-foreground">
+                    {user.email?.split('@')[0]}
+                  </span>
+                  <span className={`text-[9px] uppercase font-bold tracking-widest ${tierColor}`}>
+                    {tierLabel} PLAN
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Right Section */}
+          {/* Right Section - Desktop */}
           <div className="hidden md:flex items-center gap-3">
             {user ? (
               <div className="relative group">
@@ -70,7 +89,7 @@ const Navbar = () => {
                     <User size={18} className="text-primary" />
                   </div>
                   {subscription?.subscribed && (
-                    <Crown size={16} className="text-amber-500" />
+                    <Crown size={16} className="text-primary" />
                   )}
                 </button>
                 
@@ -105,13 +124,13 @@ const Navbar = () => {
               <div className="flex items-center gap-3">
                 <Link
                   to="/login"
-                  className="px-4 py-2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="px-4 py-2 text-muted-foreground hover:text-foreground transition-colors text-sm"
                 >
                   Entrar
                 </Link>
                 <Link
                   to="/cadastro"
-                  className="btn-primary-glow px-4 py-2 rounded-lg"
+                  className="px-4 py-2 bg-foreground text-background rounded-lg font-bold text-sm hover:opacity-90"
                 >
                   Cadastrar
                 </Link>
@@ -122,7 +141,7 @@ const Navbar = () => {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg hover:bg-muted"
+            className="md:hidden p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground"
           >
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -130,85 +149,75 @@ const Navbar = () => {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-border">
-            <div className="flex flex-col gap-2">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`px-4 py-3 rounded-lg transition-colors ${
-                    isActive(link.path)
-                      ? "bg-primary/20 text-primary"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              ))}
-              
-              {!subscription?.subscribed && (
-                <Link
-                  to="/premium"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="px-4 py-3 rounded-lg flex items-center gap-2 text-amber-500 hover:bg-amber-500/10"
-                >
-                  <Crown size={18} />
-                  Premium
-                </Link>
-              )}
+          <div className="md:hidden bg-card border-b border-border p-4 space-y-4">
+            {navLinks.map((link) => (
+              <Link
+                key={link.path}
+                to={link.path}
+                onClick={() => setMobileMenuOpen(false)}
+                className="block w-full text-left text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground"
+              >
+                {link.label}
+              </Link>
+            ))}
+            
+            {!subscription?.subscribed && (
+              <Link
+                to="/premium"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block w-full text-left text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2"
+              >
+                <Crown size={14} /> Premium
+              </Link>
+            )}
 
-              <div className="border-t border-border my-2 pt-2">
-                {user ? (
-                  <>
+            <div className="border-t border-border pt-4 mt-4">
+              {user ? (
+                <>
+                  <Link
+                    to="/conta"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block py-2 text-sm hover:text-foreground"
+                  >
+                    Minha Conta
+                  </Link>
+                  {isAdmin && (
                     <Link
-                      to="/conta"
+                      to="/admin"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="px-4 py-3 rounded-lg flex items-center gap-3 hover:bg-muted"
+                      className="block py-2 text-sm hover:text-foreground"
                     >
-                      <User size={18} />
-                      Minha Conta
+                      Painel Admin
                     </Link>
-                    {isAdmin && (
-                      <Link
-                        to="/admin"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="px-4 py-3 rounded-lg flex items-center gap-3 hover:bg-muted"
-                      >
-                        <Settings size={18} />
-                        Painel Admin
-                      </Link>
-                    )}
-                    <button
-                      onClick={() => {
-                        signOut();
-                        setMobileMenuOpen(false);
-                      }}
-                      className="w-full px-4 py-3 rounded-lg flex items-center gap-3 text-destructive hover:bg-destructive/10"
-                    >
-                      <LogOut size={18} />
-                      Sair
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      to="/login"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="px-4 py-3 rounded-lg block hover:bg-muted"
-                    >
-                      Entrar
-                    </Link>
-                    <Link
-                      to="/cadastro"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="px-4 py-3 rounded-lg block btn-primary-glow text-center mt-2"
-                    >
-                      Cadastrar
-                    </Link>
-                  </>
-                )}
-              </div>
+                  )}
+                  <button
+                    onClick={() => {
+                      signOut();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="block w-full text-left py-2 text-sm text-destructive"
+                  >
+                    Sair
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block py-2 text-sm"
+                  >
+                    Entrar
+                  </Link>
+                  <Link
+                    to="/cadastro"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block py-2 px-4 bg-foreground text-background rounded-lg text-center mt-2 font-bold text-sm"
+                  >
+                    Cadastrar
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         )}

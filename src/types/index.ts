@@ -7,7 +7,7 @@ export interface Prompt {
   fullPrompt: string;
   tags: string[];
   isPremium: boolean;
-  category: Category;
+  category: string;
   modelRecommendation: string;
 }
 

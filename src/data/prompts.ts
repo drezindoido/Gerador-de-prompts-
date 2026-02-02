@@ -1,4 +1,4 @@
-import { Prompt, Character, Category } from '@/types';
+import { Prompt, Character } from '@/types';
 
 // --- LOCATIONS ---
 export const LOCATIONS = [
@@ -318,7 +318,7 @@ class SeededRNG {
   }
 }
 
-const CATEGORIES: Category[] = ['Selfie', 'Bathroom', 'Bedroom', 'Kitchen', 'Street', 'Car'];
+const CATEGORIES = ['Selfie', 'Bathroom', 'Bedroom', 'Kitchen', 'Street', 'Car'] as const;
 
 export const generatePromptsForCharacter = (char: Character, seedOffset: number = 0): Prompt[] => {
   const rng = new SeededRNG(424242 + seedOffset + char.name.length);
