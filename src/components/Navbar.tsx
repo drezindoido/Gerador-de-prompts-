@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Crown, User, LogOut, Settings, Database } from "lucide-react";
+import { Menu, X, Crown, User, LogOut, Settings, Database, MessageCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
@@ -12,6 +12,7 @@ const Navbar = () => {
 
   const navLinks = [
     { path: "/", label: "Início" },
+    { path: "/chat", label: "Chat", icon: <MessageCircle size={14} />, highlight: true },
     { path: "/gerador", label: "Gerador" },
     { path: "/marketplace", label: "Marketplace" },
     { path: "/personagens", label: "Personagens" },
@@ -41,12 +42,17 @@ const Navbar = () => {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`text-[10px] font-bold uppercase tracking-widest transition-all ${
-                  isActive(link.path) 
-                    ? 'text-foreground border-b-2 border-foreground pb-1' 
-                    : 'text-muted-foreground hover:text-foreground'
+                className={`text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5 ${
+                  (link as any).highlight
+                    ? isActive(link.path)
+                      ? 'text-primary border-b-2 border-primary pb-1'
+                      : 'text-primary hover:opacity-80'
+                    : isActive(link.path) 
+                      ? 'text-foreground border-b-2 border-foreground pb-1' 
+                      : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
+                {(link as any).icon}
                 {link.label}
               </Link>
             ))}
