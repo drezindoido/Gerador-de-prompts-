@@ -16,6 +16,7 @@ import Admin from "./pages/Admin";
 import Generator from "./pages/Generator";
 import Marketplace from "./pages/Marketplace";
 import Characters from "./pages/Characters";
+import Chat from "./pages/Chat";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
               <Route path="/gerador" element={<Generator />} />
               <Route path="/marketplace" element={<Marketplace />} />
               <Route path="/personagens" element={<Characters />} />
+              <Route path="/chat" element={<Chat />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
