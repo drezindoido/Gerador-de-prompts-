@@ -21,3 +21,12 @@ verify_jwt = false
 
 [functions.ai-prompt]
 verify_jwt = false
+
+[functions.gemini-chat]
+verify_jwt = false
+
+[functions.generate-image]
+verify_jwt = false
+
+[functions.reset-admin-password]
+verify_jwt = false

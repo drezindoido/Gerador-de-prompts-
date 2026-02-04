@@ -87,9 +87,9 @@ const Chat = () => {
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('ai-prompt', {
+      // Use Gemini for chat (faster response)
+      const { data, error } = await supabase.functions.invoke('gemini-chat', {
         body: { 
-          action: 'chat',
           messages: [...messages, userMessage].map(m => ({ role: m.role, content: m.content })),
           context: 'Assistente de prompts especializado em geração de conteúdo criativo'
         }
