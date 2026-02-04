@@ -2,7 +2,7 @@ import { useState } from "react";
 import { 
   MapPin, Camera, Shirt, MessageSquarePlus, Settings2, Wand2, 
   Loader2, Lock, Code, MinusCircle, Hash, Sparkles, Bot,
-  BookOpen, Share2, Video, Ghost, Palette, Monitor, Tv, PenTool, X, Scroll
+  BookOpen, Share2, Video, Ghost, Palette, Monitor, Tv, PenTool, X, Scroll, ImageIcon, Download
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +11,7 @@ import CopyButton from "@/components/CopyButton";
 import ImagePreview from "@/components/ImagePreview";
 import { CHARACTERS, LOCATIONS, CAMERA_DATABASE, OUTFITS, generateDynamicPrompt } from "@/data/prompts";
 import { Character } from "@/types";
+import { toast } from "sonner";
 
 const Generator = () => {
   const { subscription } = useAuth();
@@ -28,6 +29,8 @@ const Generator = () => {
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [extraResult, setExtraResult] = useState<{type: string, content: string} | null>(null);
   const [isExtraLoading, setIsExtraLoading] = useState(false);
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [isImageGenerating, setIsImageGenerating] = useState(false);
 
   const canUseStatic = isPremium;
   const canUseAI = isPremium;
@@ -142,6 +145,46 @@ A história deve:
 
 Esta é uma versão teste, então inclua ao final uma sugestão de prompt de imagem que ilustre a cena principal da história.`;
     handleExtraAction("História", storyPrompt);
+  };
+
+  const handleImageGenerate = async () => {
+    if (!generated || !canUseAI) return;
+    setIsImageGenerating(true);
+    setGeneratedImage(null);
+    
+    try {
+      toast.info("Gerando imagem com IA...", { duration: 3000 });
+      
+      const { data, error } = await supabase.functions.invoke("generate-image", {
+        body: { prompt: generated }
+      });
+
+      if (error) throw error;
+      
+      if (data?.success && data?.imageUrl) {
+        setGeneratedImage(data.imageUrl);
+        toast.success("Imagem gerada com sucesso!");
+      } else {
+        toast.error(data?.error || "Erro ao gerar imagem");
+      }
+    } catch (e) {
+      console.error("Image generation error:", e);
+      toast.error("Erro ao gerar imagem. Tente novamente.");
+    } finally {
+      setIsImageGenerating(false);
+    }
+  };
+
+  const handleDownloadImage = () => {
+    if (!generatedImage) return;
+    
+    const link = document.createElement('a');
+    link.href = generatedImage;
+    link.download = `kaizen-${character.name.toLowerCase().replace(/\s/g, '-')}-${Date.now()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Download iniciado!");
   };
 
   return (
@@ -327,10 +370,21 @@ Esta é uma versão teste, então inclua ao final uma sugestão de prompt de ima
                   </div>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                  <button onClick={handleStoryGenerate} disabled={isExtraLoading} className="p-4 bg-gradient-to-br from-primary/20 to-accent/20 border-2 border-primary rounded-2xl hover:border-accent text-left group col-span-2">
+                  <button onClick={handleStoryGenerate} disabled={isExtraLoading} className="p-4 bg-gradient-to-br from-primary/20 to-accent/20 border-2 border-primary rounded-2xl hover:border-accent text-left group">
                     <Scroll size={18} className="text-primary group-hover:text-accent mb-3" />
                     <span className="block text-[10px] font-bold uppercase tracking-widest text-foreground">Gerar História</span>
-                    <span className="block text-[9px] text-muted-foreground mt-1">Histórias do dia a dia do personagem</span>
+                    <span className="block text-[9px] text-muted-foreground mt-1">Histórias do dia a dia</span>
+                  </button>
+                  <button onClick={handleImageGenerate} disabled={isImageGenerating} className="p-4 bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-2 border-green-500 rounded-2xl hover:border-emerald-400 text-left group">
+                    {isImageGenerating ? (
+                      <Loader2 size={18} className="text-green-500 animate-spin mb-3" />
+                    ) : (
+                      <ImageIcon size={18} className="text-green-500 group-hover:text-emerald-400 mb-3" />
+                    )}
+                    <span className="block text-[10px] font-bold uppercase tracking-widest text-foreground">
+                      {isImageGenerating ? "Gerando..." : "Gerar Imagem"}
+                    </span>
+                    <span className="block text-[9px] text-muted-foreground mt-1">Gemini AI Image</span>
                   </button>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -381,6 +435,37 @@ Esta é uma versão teste, então inclua ao final uma sugestão de prompt de ima
                     </div>
                     <pre className="text-sm text-muted-foreground font-mono leading-relaxed whitespace-pre-wrap mb-4">{extraResult.content}</pre>
                     <CopyButton text={extraResult.content} />
+                  </div>
+                )}
+                
+                {/* Generated Image Display */}
+                {generatedImage && (
+                  <div className="mt-6 bg-background border border-green-500/30 p-6 rounded-2xl animate-in fade-in">
+                    <div className="flex justify-between items-center mb-4">
+                      <span className="text-[9px] font-bold uppercase tracking-widest text-green-500 border border-green-500/30 px-2 py-1 rounded-full flex items-center gap-1">
+                        <ImageIcon size={10} /> Imagem Gerada
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={handleDownloadImage}
+                          className="p-2 rounded-lg bg-green-500/10 hover:bg-green-500/20 text-green-500 transition-colors"
+                          title="Download"
+                        >
+                          <Download size={14} />
+                        </button>
+                        <button onClick={() => setGeneratedImage(null)}><X size={14}/></button>
+                      </div>
+                    </div>
+                    <div className="rounded-xl overflow-hidden border border-border">
+                      <img 
+                        src={generatedImage} 
+                        alt="Imagem gerada por IA" 
+                        className="w-full h-auto max-h-[500px] object-contain bg-black/50"
+                      />
+                    </div>
+                    <p className="text-[9px] text-muted-foreground mt-3 text-center">
+                      Gerado com Gemini 2.5 Flash Image • Clique no botão de download para salvar
+                    </p>
                   </div>
                 )}
               </div>
