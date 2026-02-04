@@ -37,9 +37,9 @@ const AIChat = () => {
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('ai-prompt', {
+      // Use Gemini for faster responses
+      const { data, error } = await supabase.functions.invoke('gemini-chat', {
         body: { 
-          action: 'chat',
           messages: [...messages, userMessage].map(m => ({ role: m.role, content: m.content }))
         }
       });

@@ -1,6 +1,8 @@
 import { ArrowRight, Sparkles, Settings2, User, Camera, Monitor } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import HomeChatPreview from "@/components/HomeChatPreview";
+import HomeHowToUse from "@/components/HomeHowToUse";
 
 const Home = () => {
   const { user, subscription } = useAuth();
@@ -8,20 +10,20 @@ const Home = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Hero Section */}
-      <section className="relative pt-32 pb-24">
+      <section className="relative pt-24 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted rounded-full text-[10px] font-bold tracking-widest text-primary uppercase mb-8 shadow-xl shadow-black/20 border border-border">
             <Sparkles size={14} />
             O Motor de Realismo IA
           </div>
-          <h1 className="text-6xl md:text-[8rem] font-bold text-foreground mb-8 editorial-spacing tracking-tighter leading-none">
+          <h1 className="text-5xl md:text-7xl font-bold text-foreground mb-6 editorial-spacing tracking-tighter leading-none">
             Cru. Real. <br />
             <span className="text-muted-foreground">DNA UGC.</span>
           </h1>
-          <p className="max-w-xl mx-auto text-lg text-muted-foreground mb-12 leading-relaxed font-light">
+          <p className="max-w-xl mx-auto text-lg text-muted-foreground mb-10 leading-relaxed font-light">
             Consistência projetada para a próxima geração de conteúdo IA. Crie saídas de personagens 100% consistentes com nosso gerador de ponta.
           </p>
-          <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-16">
             <Link 
               to="/gerador" 
               className="w-full sm:w-auto px-10 py-5 bg-foreground text-background rounded-2xl font-bold uppercase tracking-widest text-xs hover:scale-105 transition-all shadow-2xl shadow-black/10 flex items-center justify-center gap-2"
@@ -35,7 +37,15 @@ const Home = () => {
               Explorar Biblioteca <ArrowRight size={18} />
             </Link>
           </div>
+
+          {/* Chat Preview Widget */}
+          <HomeChatPreview />
         </div>
+      </section>
+
+      {/* How To Use Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 border-t border-border">
+        <HomeHowToUse />
       </section>
 
       {/* Features Grid */}
