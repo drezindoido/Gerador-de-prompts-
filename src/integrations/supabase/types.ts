@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      characters: {
+        Row: {
+          age: number | null
+          country: string | null
+          created_at: string
+          description: string | null
+          eyes: string | null
+          hair: string | null
+          id: string
+          image_url: string | null
+          is_premium: boolean | null
+          name: string
+          prompt_base: string | null
+          rules: string[] | null
+          style: string | null
+          updated_at: string
+        }
+        Insert: {
+          age?: number | null
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          eyes?: string | null
+          hair?: string | null
+          id?: string
+          image_url?: string | null
+          is_premium?: boolean | null
+          name: string
+          prompt_base?: string | null
+          rules?: string[] | null
+          style?: string | null
+          updated_at?: string
+        }
+        Update: {
+          age?: number | null
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          eyes?: string | null
+          hair?: string | null
+          id?: string
+          image_url?: string | null
+          is_premium?: boolean | null
+          name?: string
+          prompt_base?: string | null
+          rules?: string[] | null
+          style?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -86,6 +137,30 @@ export type Database = {
           prompt_text?: string
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          created_at: string
+          id: string
+          key: string
+          updated_at: string
+          value: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key: string
+          updated_at?: string
+          value?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key?: string
+          updated_at?: string
+          value?: string | null
         }
         Relationships: []
       }
