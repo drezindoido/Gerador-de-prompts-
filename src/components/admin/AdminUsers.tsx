@@ -51,23 +51,15 @@
      }
    };
  
-   const handleRoleChange = async (userId: string, newRole: string) => {
+ const handleRoleChange = async (userId: string, newRole: "admin" | "moderator" | "user") => {
      setUpdating(userId);
      try {
        const currentRole = roles[userId];
        
-       if (currentRole) {
-         const { error } = await supabase
-           .from("user_roles")
-           .update({ role: newRole })
-           .eq("user_id", userId);
-         if (error) throw error;
-       } else {
-         const { error } = await supabase
-           .from("user_roles")
-           .insert({ user_id: userId, role: newRole });
-         if (error) throw error;
-       }
+       const { error } = await supabase
+         .from("user_roles")
+         .upsert({ user_id: userId, role: newRole }, { onConflict: 'user_id' });
+       if (error) throw error;
  
        setRoles({ ...roles, [userId]: newRole });
        toast.success("Role atualizado!");
