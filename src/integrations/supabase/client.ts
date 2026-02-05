@@ -5,6 +5,18 @@ import type { Database } from './types';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
+// Kaizen Poka-Yoke: Fail fast with clear error message
+// Validate environment variables at startup, not during requests
+if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+  throw new Error(
+    '❌ Missing Supabase environment variables!\n' +
+    'Please check your .env file and ensure:\n' +
+    '  - VITE_SUPABASE_URL is set\n' +
+    '  - VITE_SUPABASE_PUBLISHABLE_KEY is set\n' +
+    'See .env.example for reference.'
+  );
+}
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 

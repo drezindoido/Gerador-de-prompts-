@@ -51,6 +51,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const checkAdminRole = async (userId: string) => {
+    // 1. Check User Metadata (Fastest & Matching Manual Instructions)
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user?.user_metadata?.role === 'admin' || user?.app_metadata?.role === 'admin') {
+      console.log("Admin verified via metadata");
+      setIsAdmin(true);
+      return;
+    }
+
+    // 2. Check Database Table (Fallback for legacy setup)
     try {
       const { data, error } = await supabase
         .from("user_roles")
@@ -60,11 +69,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .maybeSingle();
 
       if (error) {
-        console.error("Error checking admin role:", error);
+        // Build resiliently: if table doesn't exist, don't crash, just ignore
+        console.log("Admin role table check skipped or failed:", error.message);
         return;
       }
 
-      setIsAdmin(!!data);
+      if (data) {
+        console.log("Admin verified via user_roles table");
+        setIsAdmin(true);
+      }
     } catch (err) {
       console.error("Error checking admin role:", err);
     }

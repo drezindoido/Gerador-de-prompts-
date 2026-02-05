@@ -5,6 +5,72 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+// 🎯 Modelos por tipo de ação (com fallback)
+const MODEL_GROUPS: Record<string, string[]> = {
+  generate: [
+    "meta-llama/llama-4-scout:free",
+    "nvidia/llama-3.1-nemotron-nano-8b-v1:free",
+    "z-ai/glm-4.5-air:free"
+  ],
+  improve: [
+    "meta-llama/llama-4-scout:free",
+    "nvidia/llama-3.1-nemotron-nano-8b-v1:free",
+    "z-ai/glm-4.5-air:free"
+  ],
+  chat: [
+    "z-ai/glm-4.5-air:free",
+    "mistralai/mistral-small-3.1-24b-instruct:free"
+  ]
+};
+
+// 🔁 Função de tentativa com fallback
+async function tryModels(
+  models: string[],
+  messages: { role: string; content: string }[],
+  apiKey: string
+): Promise<string> {
+  for (const model of models) {
+    try {
+      console.log(`Trying model: ${model}`);
+
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://kaizenprompts.lovable.app",
+          "X-Title": "KAIZEN PROMPTS"
+        },
+        body: JSON.stringify({
+          model,
+          messages,
+          max_tokens: 1000,
+          temperature: 0.7
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Model ${model} failed:`, response.status, errorText);
+        continue; // Tenta próximo modelo
+      }
+
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content;
+
+      if (content) {
+        console.log(`✅ Model ${model} succeeded, response length: ${content.length}`);
+        return content;
+      }
+    } catch (error) {
+      console.error(`❌ Model ${model} error:`, error);
+      continue; // Tenta próximo modelo
+    }
+  }
+
+  throw new Error("All models failed to respond");
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -55,37 +121,16 @@ Contexto do usuário: ${context || 'Nenhum contexto adicional'}`;
         throw new Error('Invalid action');
     }
 
-    const requestMessages = action === 'chat' 
+    const requestMessages = action === 'chat'
       ? [{ role: 'system', content: systemPrompt }, ...messages]
       : [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userMessage }
-        ];
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userMessage }
+      ];
 
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://kaizenprompts.lovable.app',
-        'X-Title': 'KAIZEN PROMPTS'
-      },
-      body: JSON.stringify({
-        model: 'z-ai/glm-4.5-air:free',
-        messages: requestMessages,
-        max_tokens: 1000,
-        temperature: 0.7
-      })
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('OpenRouter API error:', response.status, errorText);
-      throw new Error(`OpenRouter API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
+    // 🔁 Usa sistema de fallback
+    const models = MODEL_GROUPS[action] || MODEL_GROUPS.chat;
+    const content = await tryModels(models, requestMessages, OPENROUTER_API_KEY);
 
     console.log('AI response received, length:', content?.length);
 
@@ -95,8 +140,8 @@ Contexto do usuário: ${context || 'Nenhum contexto adicional'}`;
 
   } catch (error) {
     console.error('AI Prompt error:', error);
-    return new Response(JSON.stringify({ 
-      error: error instanceof Error ? error.message : 'Unknown error' 
+    return new Response(JSON.stringify({
+      error: error instanceof Error ? error.message : 'Unknown error'
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }

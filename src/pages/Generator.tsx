@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { 
-  MapPin, Camera, Shirt, MessageSquarePlus, Settings2, Wand2, 
+import {
+  MapPin, Camera, Shirt, MessageSquarePlus, Settings2, Wand2,
   Loader2, Lock, Code, MinusCircle, Hash, Sparkles, Bot,
   BookOpen, Share2, Video, Ghost, Palette, Monitor, Tv, PenTool, X, Scroll, ImageIcon, Download
 } from "lucide-react";
@@ -8,15 +8,16 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import CopyButton from "@/components/CopyButton";
-import ImagePreview from "@/components/ImagePreview";
 import { CHARACTERS, LOCATIONS, CAMERA_DATABASE, OUTFITS, generateDynamicPrompt } from "@/data/prompts";
 import { Character } from "@/types";
 import { toast } from "sonner";
 
+const DEFAULT_NEGATIVE_PROMPT = "ugly, deformed, disfigured, low quality, blurry, pixelated, grain, text, watermark, signature, out of frame, bad anatomy, bad proportions, cloned face, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers";
+
 const Generator = () => {
   const { subscription } = useAuth();
   const isPremium = subscription?.subscribed;
-  
+
   const [character, setCharacter] = useState<Character>(CHARACTERS[0]);
   const [location, setLocation] = useState(LOCATIONS[0]);
   const [camera, setCamera] = useState("Random");
@@ -27,7 +28,7 @@ const Generator = () => {
   const [tags, setTags] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isEnhancing, setIsEnhancing] = useState(false);
-  const [extraResult, setExtraResult] = useState<{type: string, content: string} | null>(null);
+  const [extraResult, setExtraResult] = useState<{ type: string, content: string } | null>(null);
   const [isExtraLoading, setIsExtraLoading] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isImageGenerating, setIsImageGenerating] = useState(false);
@@ -39,7 +40,7 @@ const Generator = () => {
     if (!canUseStatic) return;
     const prompt = generateDynamicPrompt(character, location, camera, outfit);
     setGenerated(prompt);
-    setNegativePrompt("");
+    setNegativePrompt(DEFAULT_NEGATIVE_PROMPT);
     setTags([]);
     setExtraResult(null);
   };
@@ -50,38 +51,41 @@ const Generator = () => {
     try {
       const basePrompt = generateDynamicPrompt(character, location, camera, outfit);
       const userAddition = customContext ? `, ${customContext}` : "";
-      
+
       const { data, error } = await supabase.functions.invoke("ai-prompt", {
-        body: { 
-          action: "improve", 
-          prompt: basePrompt + userAddition 
+        body: {
+          action: "improve",
+          prompt: basePrompt + userAddition
         }
       });
 
       if (error) throw error;
-      
+
       if (data?.content) {
         setGenerated(data.content);
-        setNegativePrompt("");
+        setNegativePrompt(DEFAULT_NEGATIVE_PROMPT);
         setTags([]);
         setExtraResult(null);
       }
     } catch (e) {
       console.error("AI Generation error:", e);
+      toast.error("Erro na geração IA. Tentando modo offline...");
+      // Fallback local
+      handleStaticGenerate();
     } finally {
       setIsGenerating(false);
     }
   };
 
   const handleEnhancePrompt = async () => {
-    if (!generated || !canUseAI || negativePrompt) return;
+    if (!generated || !canUseAI || (negativePrompt && negativePrompt !== DEFAULT_NEGATIVE_PROMPT)) return;
     setIsEnhancing(true);
     try {
       const { data, error } = await supabase.functions.invoke("ai-prompt", {
-        body: { 
-          action: "chat", 
+        body: {
+          action: "chat",
           messages: [
-            { role: "user", content: `Analise este prompt e gere um negative prompt adequado e 5 tags relevantes em formato JSON: {"negative": "...", "tags": [...]}. Prompt: ${generated}` }
+            { role: "user", content: `Analise este prompt e gere um negative prompt adequado (substituindo o padrão) e 5 tags relevantes em formato JSON: {"negative": "...", "tags": [...]}. Prompt: ${generated}` }
           ],
           context: "Geração de negative prompt e tags"
         }
@@ -92,7 +96,7 @@ const Generator = () => {
       if (data?.content) {
         try {
           const parsed = JSON.parse(data.content);
-          setNegativePrompt(parsed.negative || "");
+          setNegativePrompt(parsed.negative || DEFAULT_NEGATIVE_PROMPT);
           setTags(parsed.tags || []);
         } catch {
           setNegativePrompt(data.content);
@@ -110,8 +114,8 @@ const Generator = () => {
     setIsExtraLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("ai-prompt", {
-        body: { 
-          action: "chat", 
+        body: {
+          action: "chat",
           messages: [{ role: "user", content: systemPrompt }],
           context: `Prompt base: ${generated}`
         }
@@ -124,6 +128,7 @@ const Generator = () => {
       }
     } catch (e) {
       console.error("Extra action error:", e);
+      toast.error("Erro ao processar ação extra.");
     } finally {
       setIsExtraLoading(false);
     }
@@ -133,9 +138,9 @@ const Generator = () => {
   const handleSocial = () => handleExtraAction("Caption", `Crie uma legenda de Instagram envolvente em português para esta imagem.`);
   const handleTechSpecs = () => handleExtraAction("Tech Specs", `Liste as especificações técnicas de câmera, iluminação e pós-produção ideais para recriar esta cena.`);
   const handleRemix = (style: string) => handleExtraAction(`Remix: ${style}`, `Reescreva este prompt no estilo visual "${style}", mantendo a essência mas adaptando completamente a estética.`);
-  
+
   const handleStoryGenerate = () => {
-    const storyPrompt = `Crie uma história curta do dia a dia do personagem "${character.name}" (${character.age} anos, ${character.country}). 
+    const storyPrompt = `Crie uma história curta do dia a dia do personagem "${character.name}" (${character.age} anos, ${character.country}).
 A história deve:
 - Ser em português e ter 3-4 parágrafos
 - Descrever uma cena cotidiana interessante
@@ -151,16 +156,16 @@ Esta é uma versão teste, então inclua ao final uma sugestão de prompt de ima
     if (!generated || !canUseAI) return;
     setIsImageGenerating(true);
     setGeneratedImage(null);
-    
+
     try {
       toast.info("Gerando imagem com IA...", { duration: 3000 });
-      
+
       const { data, error } = await supabase.functions.invoke("generate-image", {
         body: { prompt: generated }
       });
 
       if (error) throw error;
-      
+
       if (data?.success && data?.imageUrl) {
         setGeneratedImage(data.imageUrl);
         toast.success("Imagem gerada com sucesso!");
@@ -177,7 +182,7 @@ Esta é uma versão teste, então inclua ao final uma sugestão de prompt de ima
 
   const handleDownloadImage = () => {
     if (!generatedImage) return;
-    
+
     const link = document.createElement('a');
     link.href = generatedImage;
     link.download = `kaizen-${character.name.toLowerCase().replace(/\s/g, '-')}-${Date.now()}.png`;
@@ -216,9 +221,9 @@ Esta é uma versão teste, então inclua ao final uma sugestão de prompt de ima
               </label>
               <div className="grid grid-cols-2 gap-3">
                 {CHARACTERS.map(c => (
-                  <button 
-                    key={c.id} 
-                    onClick={() => setCharacter(c)} 
+                  <button
+                    key={c.id}
+                    onClick={() => setCharacter(c)}
                     className={`p-4 rounded-2xl text-left border transition-all ${character.id === c.id ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card text-foreground'}`}
                   >
                     <p className="font-bold text-sm">{c.name}</p>
@@ -270,26 +275,26 @@ Esta é uma versão teste, então inclua ao final uma sugestão de prompt de ima
               <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                 <MessageSquarePlus size={14} /> Contexto (Opcional)
               </label>
-              <textarea 
-                value={customContext} 
-                onChange={(e) => setCustomContext(e.target.value)} 
-                placeholder="Ex: Comendo um hambúrguer, lutando..." 
-                className="w-full p-4 rounded-2xl bg-card border border-border text-sm font-medium h-24 resize-none text-foreground placeholder-muted-foreground" 
+              <textarea
+                value={customContext}
+                onChange={(e) => setCustomContext(e.target.value)}
+                placeholder="Ex: Comendo um hambúrguer, lutando..."
+                className="w-full p-4 rounded-2xl bg-card border border-border text-sm font-medium h-24 resize-none text-foreground placeholder-muted-foreground"
               />
             </div>
 
             {/* Generate Buttons */}
             <div className="space-y-4">
-              <button 
-                onClick={handleStaticGenerate} 
+              <button
+                onClick={handleStaticGenerate}
                 disabled={isGenerating}
                 className="w-full py-4 bg-card border border-border text-foreground rounded-2xl font-bold uppercase tracking-widest text-[10px] hover:bg-muted flex items-center justify-center gap-2"
               >
                 <Settings2 size={14} /> Montagem Estática
               </button>
-              
-              <button 
-                onClick={handleAIGenerate} 
+
+              <button
+                onClick={handleAIGenerate}
                 disabled={isGenerating}
                 className="w-full py-4 rounded-2xl font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 bg-primary text-primary-foreground hover:opacity-90"
               >
@@ -339,16 +344,75 @@ Esta é uma versão teste, então inclua ao final uma sugestão de prompt de ima
                   <div className="space-y-4 pt-4 border-t border-border">
                     <div className="flex gap-2">
                       <div className="flex-grow"><CopyButton text={generated} label="Copiar Prompt" /></div>
-                      <button 
-                        onClick={handleEnhancePrompt} 
-                        disabled={isEnhancing || !!negativePrompt}
+                      <button
+                        onClick={handleEnhancePrompt}
+                        disabled={isEnhancing || (negativePrompt && negativePrompt !== DEFAULT_NEGATIVE_PROMPT)}
                         className="px-6 bg-muted text-primary rounded-xl font-bold uppercase tracking-widest text-[9px] hover:opacity-90 transition-all disabled:opacity-50 flex items-center gap-2"
                       >
                         {isEnhancing ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
-                        {negativePrompt ? "Analisado" : "Gerar Negativos"}
+                        {negativePrompt && negativePrompt !== DEFAULT_NEGATIVE_PROMPT ? "Analisado" : "Gerar Negativos"}
                       </button>
                     </div>
-                    <ImagePreview promptId={`gen-${generated.substring(0, 10).replace(/\s/g, '')}-${Date.now()}`} promptText={generated} autoGenerate={false} />
+
+                    {/* Creative Suite Integrated Here */}
+                    <div className="mt-8 pt-8 border-t border-border/50">
+                      <div className="flex items-center gap-3 mb-6">
+                        <div className="bg-primary/10 p-2 rounded-xl text-primary"><Bot size={16} /></div>
+                        <div>
+                          <h3 className="font-bold text-foreground text-sm">Creative Suite</h3>
+                          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Ferramentas de Criação</p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <button onClick={handleImageGenerate} disabled={isImageGenerating} className="p-3 bg-green-500/10 border border-green-500/30 rounded-xl hover:bg-green-500/20 text-left group transition-colors">
+                          {isImageGenerating ? <Loader2 size={16} className="text-green-500 animate-spin mb-2" /> : <ImageIcon size={16} className="text-green-500 mb-2" />}
+                          <span className="block text-[9px] font-bold uppercase tracking-widest text-foreground">Gerar Imagem</span>
+                        </button>
+
+                        <button onClick={handleStoryGenerate} disabled={isExtraLoading} className="p-3 bg-background border border-border rounded-xl hover:border-primary text-left group transition-colors">
+                          <Scroll size={16} className="text-muted-foreground group-hover:text-primary mb-2 transition-colors" />
+                          <span className="block text-[9px] font-bold uppercase tracking-widest text-foreground">História</span>
+                        </button>
+
+                        <button onClick={handleLore} disabled={isExtraLoading} className="p-3 bg-background border border-border rounded-xl hover:border-primary text-left group transition-colors">
+                          <BookOpen size={16} className="text-muted-foreground group-hover:text-primary mb-2 transition-colors" />
+                          <span className="block text-[9px] font-bold uppercase tracking-widest text-foreground">Lore</span>
+                        </button>
+
+                        <button onClick={handleSocial} disabled={isExtraLoading} className="p-3 bg-background border border-border rounded-xl hover:border-primary text-left group transition-colors">
+                          <Share2 size={16} className="text-muted-foreground group-hover:text-primary mb-2 transition-colors" />
+                          <span className="block text-[9px] font-bold uppercase tracking-widest text-foreground">Legenda</span>
+                        </button>
+                      </div>
+
+                      {/* Display Extra Results or Image */}
+                      {(isExtraLoading || isImageGenerating) && (
+                        <div className="mt-4 text-center p-4 bg-muted/20 rounded-xl">
+                          <Loader2 size={24} className="animate-spin text-primary mx-auto mb-2" />
+                          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Processando...</p>
+                        </div>
+                      )}
+
+                      {extraResult && (
+                        <div className="mt-4 bg-background border border-border p-4 rounded-xl animate-in fade-in relative">
+                          <button onClick={() => setExtraResult(null)} className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"><X size={14} /></button>
+                          <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary mb-2">{extraResult.type}</h4>
+                          <pre className="text-xs text-muted-foreground font-mono leading-relaxed whitespace-pre-wrap">{extraResult.content}</pre>
+                          <div className="mt-2 flex justify-end"><CopyButton text={extraResult.content} /></div>
+                        </div>
+                      )}
+
+                      {generatedImage && (
+                        <div className="mt-4 bg-background border border-green-500/30 p-4 rounded-xl animate-in fade-in relative">
+                          <button onClick={() => setGeneratedImage(null)} className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"><X size={14} /></button>
+                          <h4 className="text-[10px] font-bold uppercase tracking-widest text-green-500 mb-2 flex items-center gap-2"><ImageIcon size={12} /> Resultado</h4>
+                          <img src={generatedImage} alt="Gerado" className="w-full rounded-lg bg-black/50 object-contain mb-2" />
+                          <button onClick={handleDownloadImage} className="w-full py-2 bg-green-500/10 text-green-500 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-green-500/20">Download</button>
+                        </div>
+                      )}
+
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -358,118 +422,6 @@ Esta é uma versão teste, então inclua ao final uma sugestão de prompt de ima
                 </div>
               )}
             </div>
-
-            {/* Creative Suite */}
-            {generated && isPremium && (
-              <div className="bg-card border border-border rounded-[2.5rem] p-8 animate-in slide-in-from-bottom-8 duration-700 relative overflow-hidden">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="bg-primary p-2 rounded-xl text-primary-foreground"><Bot size={18} /></div>
-                  <div>
-                    <h3 className="font-bold text-foreground">Creative Suite</h3>
-                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Aumente o realismo</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                  <button onClick={handleStoryGenerate} disabled={isExtraLoading} className="p-4 bg-gradient-to-br from-primary/20 to-accent/20 border-2 border-primary rounded-2xl hover:border-accent text-left group">
-                    <Scroll size={18} className="text-primary group-hover:text-accent mb-3" />
-                    <span className="block text-[10px] font-bold uppercase tracking-widest text-foreground">Gerar História</span>
-                    <span className="block text-[9px] text-muted-foreground mt-1">Histórias do dia a dia</span>
-                  </button>
-                  <button onClick={handleImageGenerate} disabled={isImageGenerating} className="p-4 bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-2 border-green-500 rounded-2xl hover:border-emerald-400 text-left group">
-                    {isImageGenerating ? (
-                      <Loader2 size={18} className="text-green-500 animate-spin mb-3" />
-                    ) : (
-                      <ImageIcon size={18} className="text-green-500 group-hover:text-emerald-400 mb-3" />
-                    )}
-                    <span className="block text-[10px] font-bold uppercase tracking-widest text-foreground">
-                      {isImageGenerating ? "Gerando..." : "Gerar Imagem"}
-                    </span>
-                    <span className="block text-[9px] text-muted-foreground mt-1">Gemini AI Image</span>
-                  </button>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <button onClick={handleLore} disabled={isExtraLoading} className="p-4 bg-background border border-border rounded-2xl hover:border-primary text-left group">
-                    <BookOpen size={16} className="text-muted-foreground group-hover:text-primary mb-3" />
-                    <span className="block text-[10px] font-bold uppercase tracking-widest text-foreground">Lore / Backstory</span>
-                  </button>
-                  <button onClick={handleSocial} disabled={isExtraLoading} className="p-4 bg-background border border-border rounded-2xl hover:border-primary text-left group">
-                    <Share2 size={16} className="text-muted-foreground group-hover:text-primary mb-3" />
-                    <span className="block text-[10px] font-bold uppercase tracking-widest text-foreground">Social Caption</span>
-                  </button>
-                  <button onClick={handleTechSpecs} disabled={isExtraLoading} className="p-4 bg-background border border-border rounded-2xl hover:border-primary text-left group">
-                    <Video size={16} className="text-muted-foreground group-hover:text-primary mb-3" />
-                    <span className="block text-[10px] font-bold uppercase tracking-widest text-foreground">Tech Specs</span>
-                  </button>
-                  <button onClick={() => handleRemix('80s Dark Fantasy Movie')} disabled={isExtraLoading} className="p-4 bg-background border border-border rounded-2xl hover:border-primary text-left group">
-                    <Ghost size={16} className="text-muted-foreground group-hover:text-primary mb-3" />
-                    <span className="block text-[10px] font-bold uppercase tracking-widest text-foreground">Dark Fantasy 80s</span>
-                  </button>
-                  <button onClick={() => handleRemix('Studio Ghibli Watercolor')} disabled={isExtraLoading} className="p-4 bg-background border border-border rounded-2xl hover:border-primary text-left group">
-                    <Palette size={16} className="text-muted-foreground group-hover:text-primary mb-3" />
-                    <span className="block text-[10px] font-bold uppercase tracking-widest text-foreground">Ghibli Style</span>
-                  </button>
-                  <button onClick={() => handleRemix('Vaporwave Glitch')} disabled={isExtraLoading} className="p-4 bg-background border border-border rounded-2xl hover:border-primary text-left group">
-                    <Monitor size={16} className="text-muted-foreground group-hover:text-primary mb-3" />
-                    <span className="block text-[10px] font-bold uppercase tracking-widest text-foreground">Vaporwave</span>
-                  </button>
-                  <button onClick={() => handleRemix('Analogue Horror VHS')} disabled={isExtraLoading} className="p-4 bg-background border border-border rounded-2xl hover:border-primary text-left group">
-                    <Tv size={16} className="text-muted-foreground group-hover:text-primary mb-3" />
-                    <span className="block text-[10px] font-bold uppercase tracking-widest text-foreground">VHS Horror</span>
-                  </button>
-                  <button onClick={() => handleRemix('Renaissance Oil Painting')} disabled={isExtraLoading} className="p-4 bg-background border border-border rounded-2xl hover:border-primary text-left group">
-                    <PenTool size={16} className="text-muted-foreground group-hover:text-primary mb-3" />
-                    <span className="block text-[10px] font-bold uppercase tracking-widest text-foreground">Renaissance</span>
-                  </button>
-                </div>
-                {isExtraLoading && (
-                  <div className="mt-6 text-center">
-                    <Loader2 size={24} className="animate-spin text-primary mx-auto mb-2" />
-                    <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Processando Remix...</span>
-                  </div>
-                )}
-                {extraResult && (
-                  <div className="mt-6 bg-background border border-border p-6 rounded-2xl animate-in fade-in">
-                    <div className="flex justify-between items-center mb-4">
-                      <span className="text-[9px] font-bold uppercase tracking-widest text-primary border border-border px-2 py-1 rounded-full">{extraResult.type}</span>
-                      <button onClick={() => setExtraResult(null)}><X size={14}/></button>
-                    </div>
-                    <pre className="text-sm text-muted-foreground font-mono leading-relaxed whitespace-pre-wrap mb-4">{extraResult.content}</pre>
-                    <CopyButton text={extraResult.content} />
-                  </div>
-                )}
-                
-                {/* Generated Image Display */}
-                {generatedImage && (
-                  <div className="mt-6 bg-background border border-green-500/30 p-6 rounded-2xl animate-in fade-in">
-                    <div className="flex justify-between items-center mb-4">
-                      <span className="text-[9px] font-bold uppercase tracking-widest text-green-500 border border-green-500/30 px-2 py-1 rounded-full flex items-center gap-1">
-                        <ImageIcon size={10} /> Imagem Gerada
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <button 
-                          onClick={handleDownloadImage}
-                          className="p-2 rounded-lg bg-green-500/10 hover:bg-green-500/20 text-green-500 transition-colors"
-                          title="Download"
-                        >
-                          <Download size={14} />
-                        </button>
-                        <button onClick={() => setGeneratedImage(null)}><X size={14}/></button>
-                      </div>
-                    </div>
-                    <div className="rounded-xl overflow-hidden border border-border">
-                      <img 
-                        src={generatedImage} 
-                        alt="Imagem gerada por IA" 
-                        className="w-full h-auto max-h-[500px] object-contain bg-black/50"
-                      />
-                    </div>
-                    <p className="text-[9px] text-muted-foreground mt-3 text-center">
-                      Gerado com Gemini 2.5 Flash Image • Clique no botão de download para salvar
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         </div>
       </div>
