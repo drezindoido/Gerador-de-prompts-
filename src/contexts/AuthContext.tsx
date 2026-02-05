@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useMemo, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const checkSubscription = async () => {
     if (!session?.access_token) return;
-    
+
     try {
       const { data, error } = await supabase.functions.invoke("check-subscription", {
         headers: {
@@ -158,20 +158,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsAdmin(false);
   };
 
+  // Memoize context value to prevent unnecessary re-renders
+  const value = useMemo(() => ({
+    user,
+    session,
+    loading,
+    subscription,
+    isAdmin,
+    signUp,
+    signIn,
+    signOut,
+    checkSubscription,
+  }), [user, session, loading, subscription, isAdmin]);
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        session,
-        loading,
-        subscription,
-        isAdmin,
-        signUp,
-        signIn,
-        signOut,
-        checkSubscription,
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

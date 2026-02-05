@@ -22,9 +22,11 @@ const { characters, loading: isLoadingCharacters } = useCharacters();
 const [character, setCharacter] = useState<Character | null>(null);
 
 // Effect to select first character when loaded
-if (!character && characters.length > 0) {
-  setCharacter(characters[0]);
-}
+useEffect(() => {
+  if (!character && characters.length > 0) {
+    setCharacter(characters[0]);
+  }
+}, [characters, character]);
 const [location, setLocation] = useState(LOCATIONS[0]);
 const [camera, setCamera] = useState("Random");
 const [outfit, setOutfit] = useState(OUTFITS[0]);
