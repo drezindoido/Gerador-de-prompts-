@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { Copy, Check, Sparkles, Bot } from "lucide-react";
-import { 
-  characters, 
-  locations, 
-  outfits, 
-  cameraStyles, 
-  emotions, 
-  artStyles,
-  type Character 
+import {
+  characters,
+  locations,
+  outfits,
+  cameraStyles,
+  emotions,
+  artStyles
 } from "@/data/characters";
+import { Character } from "@/types";
+import { useCharacters } from "@/hooks/useCharacters";
 import { toast } from "sonner";
 import AIPromptGenerator from "./AIPromptGenerator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -19,13 +20,20 @@ interface GeneratorViewProps {
 }
 
 const GeneratorView = ({ isPremiumUser, selectedCharacter }: GeneratorViewProps) => {
+  const { characters, loading } = useCharacters();
+
   const availableCharacters = characters.filter(
     (c) => !c.isPremium || isPremiumUser
   );
 
   const [character, setCharacter] = useState(
-    selectedCharacter?.id || availableCharacters[0]?.id || ""
+    selectedCharacter?.id || ""
   );
+
+  // Update initial character when loaded
+  if (!character && availableCharacters.length > 0) {
+    setCharacter(availableCharacters[0].id);
+  }
   const [location, setLocation] = useState(locations[0]);
   const [outfit, setOutfit] = useState(outfits[0]);
   const [camera, setCamera] = useState(cameraStyles[0]);
@@ -37,14 +45,14 @@ const GeneratorView = ({ isPremiumUser, selectedCharacter }: GeneratorViewProps)
   const generatePrompt = () => {
     const selectedChar = characters.find((c) => c.id === character);
     console.log("Generate clicked - character:", character, "selectedChar:", selectedChar);
-    
+
     if (!selectedChar) {
       toast.error("Selecione um personagem primeiro!");
       return;
     }
 
     const prompt = `${style} image of ${selectedChar.name}, ${selectedChar.age} years old, ${selectedChar.country}, in a ${location.toLowerCase()}, ${camera.toLowerCase()} style, ${emotion.toLowerCase()} expression, wearing ${outfit}, natural skin texture, detailed lighting, professional quality, 8K resolution.`;
-    
+
     setGeneratedPrompt(prompt);
     toast.success("Prompt gerado com sucesso!");
   };
@@ -85,107 +93,110 @@ const GeneratorView = ({ isPremiumUser, selectedCharacter }: GeneratorViewProps)
 
         <TabsContent value="manual" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">
-            Personagem
-          </label>
-          <select
-            value={character}
-            onChange={(e) => setCharacter(e.target.value)}
-            className="select-dark w-full"
-          >
-            {availableCharacters.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name} ({c.age}, {c.country})
-              </option>
-            ))}
-          </select>
-        </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-muted-foreground">
+                Personagem
+              </label>
+              <select
+                aria-label="Selecionar Personagem"
+                value={character}
+                onChange={(e) => setCharacter(e.target.value)}
+                className="select-dark w-full"
+                disabled={loading}
+              >
+                {loading && <option>Carregando...</option>}
+                {availableCharacters.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name} ({c.age}, {c.country})
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">
-            Local
-          </label>
-          <select
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            className="select-dark w-full"
-          >
-            {locations.map((loc) => (
-              <option key={loc} value={loc}>
-                {loc}
-              </option>
-            ))}
-          </select>
-        </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-muted-foreground">
+                Local
+              </label>
+              <select
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                className="select-dark w-full"
+              >
+                {locations.map((loc) => (
+                  <option key={loc} value={loc}>
+                    {loc}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">
-            Roupa
-          </label>
-          <select
-            value={outfit}
-            onChange={(e) => setOutfit(e.target.value)}
-            className="select-dark w-full"
-          >
-            {outfits.map((out) => (
-              <option key={out} value={out}>
-                {out}
-              </option>
-            ))}
-          </select>
-        </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-muted-foreground">
+                Roupa
+              </label>
+              <select
+                value={outfit}
+                onChange={(e) => setOutfit(e.target.value)}
+                className="select-dark w-full"
+              >
+                {outfits.map((out) => (
+                  <option key={out} value={out}>
+                    {out}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">
-            Estilo de Câmera
-          </label>
-          <select
-            value={camera}
-            onChange={(e) => setCamera(e.target.value)}
-            className="select-dark w-full"
-          >
-            {cameraStyles.map((cam) => (
-              <option key={cam} value={cam}>
-                {cam}
-              </option>
-            ))}
-          </select>
-        </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-muted-foreground">
+                Estilo de Câmera
+              </label>
+              <select
+                value={camera}
+                onChange={(e) => setCamera(e.target.value)}
+                className="select-dark w-full"
+              >
+                {cameraStyles.map((cam) => (
+                  <option key={cam} value={cam}>
+                    {cam}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">
-            Emoção
-          </label>
-          <select
-            value={emotion}
-            onChange={(e) => setEmotion(e.target.value)}
-            className="select-dark w-full"
-          >
-            {emotions.map((emo) => (
-              <option key={emo} value={emo}>
-                {emo}
-              </option>
-            ))}
-          </select>
-        </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-muted-foreground">
+                Emoção
+              </label>
+              <select
+                value={emotion}
+                onChange={(e) => setEmotion(e.target.value)}
+                className="select-dark w-full"
+              >
+                {emotions.map((emo) => (
+                  <option key={emo} value={emo}>
+                    {emo}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">
-            Estilo Artístico
-          </label>
-          <select
-            value={style}
-            onChange={(e) => setStyle(e.target.value)}
-            className="select-dark w-full"
-          >
-            {artStyles.map((sty) => (
-              <option key={sty} value={sty}>
-                {sty}
-              </option>
-            ))}
-          </select>
-        </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-muted-foreground">
+                Estilo Artístico
+              </label>
+              <select
+                value={style}
+                onChange={(e) => setStyle(e.target.value)}
+                className="select-dark w-full"
+              >
+                {artStyles.map((sty) => (
+                  <option key={sty} value={sty}>
+                    {sty}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <button

@@ -20,6 +20,9 @@ export interface Character {
   eyes: string;
   style: string;
   desc: string;
+  description?: string; // Database field
   isPremium: boolean;
   rules: string[];
+  prompt_base?: string; // Database field
+  image_url?: string; // Database field
 }
