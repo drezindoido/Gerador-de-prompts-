@@ -137,7 +137,7 @@
                    <td className="px-4 py-3">
                      <select
                        value={roles[user.id] || "user"}
-                       onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                       onChange={(e) => handleRoleChange(user.id, e.target.value as "admin" | "moderator" | "user")}
                        disabled={updating === user.id}
                        className="select-dark text-sm py-1 px-2"
                      >
