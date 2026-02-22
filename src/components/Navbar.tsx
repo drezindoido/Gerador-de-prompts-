@@ -13,9 +13,12 @@ const Navbar = () => {
   const navLinks = [
     { path: "/", label: "Início" },
     { path: "/chat", label: "Chat", icon: <MessageCircle size={14} />, highlight: true },
-    { path: "/gerador", label: "Gerador" },
+    { path: "/gerador", label: "Imagens" },
+    { path: "/video", label: "Vídeos" },
     { path: "/marketplace", label: "Marketplace" },
     { path: "/personagens", label: "Personagens" },
+    { path: "https://t.me/KaizenPromptBetaBot", label: "Bot Imagem", external: true },
+    { path: "https://t.me/kaizen_bebe_bot", label: "Bot Premium", external: true },
     { path: "/como-usar", label: "Como Usar" },
   ];
 
@@ -39,38 +42,48 @@ const Navbar = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
             {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5 ${
-                  (link as any).highlight
+              link.external ? (
+                <a
+                  key={link.path}
+                  href={link.path}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
+                >
+                  {link.label}
+                </a>
+              ) : (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={`text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5 ${(link as any).highlight
                     ? isActive(link.path)
                       ? 'text-primary border-b-2 border-primary pb-1'
                       : 'text-primary hover:opacity-80'
-                    : isActive(link.path) 
-                      ? 'text-foreground border-b-2 border-foreground pb-1' 
+                    : isActive(link.path)
+                      ? 'text-foreground border-b-2 border-foreground pb-1'
                       : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {(link as any).icon}
-                {link.label}
-              </Link>
+                    }`}
+                >
+                  {(link as any).icon}
+                  {link.label}
+                </Link>
+              )
             ))}
-            
+
             {!subscription?.subscribed && (
               <Link
                 to="/premium"
-                className={`text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-1 ${
-                  isActive("/premium") 
-                    ? 'text-primary border-b-2 border-primary pb-1' 
-                    : 'text-primary hover:opacity-80'
-                }`}
+                className={`text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-1 ${isActive("/premium")
+                  ? 'text-primary border-b-2 border-primary pb-1'
+                  : 'text-primary hover:opacity-80'
+                  }`}
               >
                 <Crown size={12} />
                 Premium
               </Link>
             )}
-            
+
             {user && (
               <div className="flex items-center gap-3 pl-4 border-l border-border">
                 <Database size={14} className="text-green-500" />
@@ -98,7 +111,7 @@ const Navbar = () => {
                     <Crown size={16} className="text-primary" />
                   )}
                 </button>
-                
+
                 {/* Dropdown */}
                 <div className="absolute right-0 top-full mt-2 w-48 py-2 bg-card border border-border rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                   <Link
@@ -157,16 +170,29 @@ const Navbar = () => {
         {mobileMenuOpen && (
           <div className="md:hidden bg-card border-b border-border p-4 space-y-4">
             {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                onClick={() => setMobileMenuOpen(false)}
-                className="block w-full text-left text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground"
-              >
-                {link.label}
-              </Link>
+              link.external ? (
+                <a
+                  key={link.path}
+                  href={link.path}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block w-full text-left text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground"
+                >
+                  {link.label} (Telegram)
+                </a>
+              ) : (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block w-full text-left text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground"
+                >
+                  {link.label}
+                </Link>
+              )
             ))}
-            
+
             {!subscription?.subscribed && (
               <Link
                 to="/premium"

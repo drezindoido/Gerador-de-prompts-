@@ -14,6 +14,7 @@ import ComoUsar from "./pages/ComoUsar";
 import Conta from "./pages/Conta";
 import Admin from "./pages/Admin";
 import Generator from "./pages/Generator";
+import Video from "./pages/Video";
 import Marketplace from "./pages/Marketplace";
 import Characters from "./pages/Characters";
 import Chat from "./pages/Chat";
@@ -39,6 +40,7 @@ const App = () => (
               <Route path="/conta" element={<Conta />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/gerador" element={<Generator />} />
+              <Route path="/video" element={<Video />} />
               <Route path="/marketplace" element={<Marketplace />} />
               <Route path="/personagens" element={<Characters />} />
               <Route path="/chat" element={<Chat />} />

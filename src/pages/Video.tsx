@@ -15,7 +15,7 @@ import { toast } from "sonner";
 
 const DEFAULT_NEGATIVE_PROMPT = "ugly, deformed, disfigured, low quality, blurry, pixelated, grain, text, watermark, signature, out of frame, bad anatomy, bad proportions, cloned face, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers";
 
-const Generator = () => {
+const Video = () => {
   const { subscription } = useAuth();
   const isPremium = subscription?.subscribed;
   const { characters, loading: isLoadingCharacters } = useCharacters();
@@ -39,8 +39,7 @@ const Generator = () => {
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [extraResult, setExtraResult] = useState<{ type: string, content: string } | null>(null);
   const [isExtraLoading, setIsExtraLoading] = useState(false);
-  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
-  const [isImageGenerating, setIsImageGenerating] = useState(false);
+  // Image states removed
 
   const canUseStatic = isPremium;
   const canUseAI = isPremium;
@@ -59,11 +58,11 @@ const Generator = () => {
     setIsGenerating(true);
     try {
       const basePrompt = generateDynamicPrompt(character, location, camera, outfit);
-      const userAddition = customContext ? ", " + customContext : "";
+      const userAddition = customContext ? `, ${customContext}` : "";
 
       const { data, error } = await supabase.functions.invoke("ai-prompt", {
         body: {
-          action: "generate-image-prompt",
+          action: "generate-video-prompt",
           prompt: basePrompt + userAddition
         }
       });
@@ -94,7 +93,7 @@ const Generator = () => {
         body: {
           action: "chat",
           messages: [
-            { role: "user", content: `Analise este prompt e gere um negative prompt adequado(substituindo o padrão) e 5 tags relevantes em formato JSON: { "negative": "...", "tags": [...] }.Prompt: ${generated} ` }
+            { role: "user", content: `Analise este prompt e gere um negative prompt adequado (substituindo o padrão) e 5 tags relevantes em formato JSON: {"negative": "...", "tags": [...]}. Prompt: ${generated}` }
           ],
           context: "Geração de negative prompt e tags"
         }
@@ -126,7 +125,7 @@ const Generator = () => {
         body: {
           action: "chat",
           messages: [{ role: "user", content: systemPrompt }],
-          context: `Prompt base: ${generated} `
+          context: `Prompt base: ${generated}`
         }
       });
 
@@ -143,70 +142,32 @@ const Generator = () => {
     }
   };
 
-  const handleLore = () => handleExtraAction("Lore", `Crie um backstory detalhado para esta cena / personagem baseado no prompt.`);
+  const handleLore = () => handleExtraAction("Lore", `Crie um backstory detalhado para esta cena/personagem baseado no prompt.`);
   const handleSocial = () => handleExtraAction("Caption", `Crie uma legenda de Instagram envolvente em português para esta imagem.`);
-  const handleTechSpecs = () => handleExtraAction("Tech Specs", `Liste as especificações técnicas de câmera, iluminação e pós - produção ideais para recriar esta cena.`);
-  const handleRemix = (style: string) => handleExtraAction(`Remix: ${style} `, `Reescreva este prompt no estilo visual "${style}", mantendo a essência mas adaptando completamente a estética.`);
+  const handleTechSpecs = () => handleExtraAction("Tech Specs", `Liste as especificações técnicas de câmera, iluminação e pós-produção ideais para recriar esta cena.`);
+  const handleRemix = (style: string) => handleExtraAction(`Remix: ${style}`, `Reescreva este prompt no estilo visual "${style}", mantendo a essência mas adaptando completamente a estética.`);
 
   const handleStoryGenerate = () => {
     if (!character) return;
-    const storyPrompt = `Crie uma história curta do dia a dia do personagem "${character.name}"(${character.age} anos, ${character.country}).
+    const storyPrompt = `Crie uma história curta do dia a dia do personagem "${character.name}" (${character.age} anos, ${character.country}).
 A história deve:
-      - Ser em português e ter 3 - 4 parágrafos
-        - Descrever uma cena cotidiana interessante
-          - Manter a personalidade e estilo do personagem: ${character.style}
-            - Terminar com um gancho que permita continuação futura
-              - Cada história deve poder se conectar com histórias anteriores do mesmo personagem
+- Ser em português e ter 3-4 parágrafos
+- Descrever uma cena cotidiana interessante
+- Manter a personalidade e estilo do personagem: ${character.style}
+- Terminar com um gancho que permita continuação futura
+- Cada história deve poder se conectar com histórias anteriores do mesmo personagem
 
 Esta é uma versão teste, então inclua ao final uma sugestão de prompt de imagem que ilustre a cena principal da história.`;
     handleExtraAction("História", storyPrompt);
   };
 
-  const handleImageGenerate = async () => {
-    if (!generated || !canUseAI) return;
-    setIsImageGenerating(true);
-    setGeneratedImage(null);
-
-    try {
-      toast.info("Gerando imagem com IA...", { duration: 3000 });
-
-      const { data, error } = await supabase.functions.invoke("generate-image", {
-        body: { prompt: generated }
-      });
-
-      if (error) throw error;
-
-      if (data?.success && data?.imageUrl) {
-        setGeneratedImage(data.imageUrl);
-        toast.success("Imagem gerada com sucesso!");
-      } else {
-        toast.error(data?.error || "Erro ao gerar imagem");
-      }
-    } catch (e) {
-      console.error("Image generation error:", e);
-      toast.error("Erro ao gerar imagem. Tente novamente.");
-    } finally {
-      setIsImageGenerating(false);
-    }
-  };
-
-  const handleDownloadImage = () => {
-    if (!generatedImage) return;
-
-    const link = document.createElement('a');
-    link.href = generatedImage;
-    link.download = `kaizen - ${character?.name.toLowerCase().replace(/\s/g, '-')} -${Date.now()}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success("Download iniciado!");
-  };
+  // Image logic disabled for video page
 
   return (
     <div className="min-h-screen py-20 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-2 editorial-spacing">Prompt Generator</h1>
+          <h1 className="text-4xl font-bold mb-2 editorial-spacing">Prompt Video</h1>
           <p className="text-muted-foreground">Monte prompts profissionais com nosso motor de consistência.</p>
         </div>
 
@@ -223,7 +184,7 @@ Esta é uma versão teste, então inclua ao final uma sugestão de prompt de ima
 
         <div className="grid lg:grid-cols-12 gap-8">
           {/* Controls */}
-          <div className={`lg: col - span - 5 space - y - 6 ${!isPremium ? 'opacity-50 pointer-events-none' : ''} `}>
+          <div className={`lg:col-span-5 space-y-6 ${!isPremium ? 'opacity-50 pointer-events-none' : ''}`}>
             {/* Character Selection */}
             <div className="space-y-4">
               <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
@@ -238,10 +199,10 @@ Esta é uma versão teste, então inclua ao final uma sugestão de prompt de ima
                       key={c.id}
                       onClick={() => setCharacter(c)}
                       disabled={!c}
-                      className={`p - 4 rounded - 2xl text - left border transition - all ${character?.id === c.id ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card text-foreground'} `}
+                      className={`p-4 rounded-2xl text-left border transition-all ${character?.id === c.id ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card text-foreground'}`}
                     >
                       <p className="font-bold text-sm">{c.name}</p>
-                      <p className={`text - [10px] ${character?.id === c.id ? 'opacity-70' : 'text-muted-foreground'} `}>{c.country}</p>
+                      <p className={`text-[10px] ${character?.id === c.id ? 'opacity-70' : 'text-muted-foreground'}`}>{c.country}</p>
                     </button>
                   ))
                 )}
@@ -337,7 +298,7 @@ Esta é uma versão teste, então inclua ao final uma sugestão de prompt de ima
                   ) : (
                     <>
                       <Zap size={18} className="transition-transform group-hover:scale-110" />
-                      REMIX COM IA
+                      CRIAR SCRIPT IA
                     </>
                   )}
                 </button>
@@ -415,11 +376,8 @@ Esta é uma versão teste, então inclua ao final uma sugestão de prompt de ima
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        <button onClick={handleImageGenerate} disabled={isImageGenerating} className="p-3 bg-green-500/10 border border-green-500/30 rounded-xl hover:bg-green-500/20 text-left group transition-colors" title="Gerar Imagem">
-                          {isImageGenerating ? <Loader2 size={16} className="text-green-500 animate-spin mb-2" /> : <ImageIcon size={16} className="text-green-500 mb-2" />}
-                          <span className="block text-[9px] font-bold uppercase tracking-widest text-foreground">Gerar Imagem</span>
-                        </button>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        {/* Imagem generation logic disabled for Video Generator */}
 
                         <button onClick={handleStoryGenerate} disabled={isExtraLoading} className="p-3 bg-background border border-border rounded-xl hover:border-primary text-left group transition-colors">
                           <Scroll size={16} className="text-muted-foreground group-hover:text-primary mb-2 transition-colors" />
@@ -438,7 +396,7 @@ Esta é uma versão teste, então inclua ao final uma sugestão de prompt de ima
                       </div>
 
                       {/* Display Extra Results or Image */}
-                      {(isExtraLoading || isImageGenerating) && (
+                      {isExtraLoading && (
                         <div className="mt-4 text-center p-4 bg-muted/20 rounded-xl">
                           <Loader2 size={24} className="animate-spin text-primary mx-auto mb-2" />
                           <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Processando...</p>
@@ -454,14 +412,7 @@ Esta é uma versão teste, então inclua ao final uma sugestão de prompt de ima
                         </div>
                       )}
 
-                      {generatedImage && (
-                        <div className="mt-4 bg-background border border-green-500/30 p-4 rounded-xl animate-in fade-in relative">
-                          <button onClick={() => setGeneratedImage(null)} className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"><X size={14} /></button>
-                          <h4 className="text-[10px] font-bold uppercase tracking-widest text-green-500 mb-2 flex items-center gap-2"><ImageIcon size={12} /> Resultado</h4>
-                          <img src={generatedImage} alt="Gerado" className="w-full rounded-lg bg-black/50 object-contain mb-2" />
-                          <button onClick={handleDownloadImage} className="w-full py-2 bg-green-500/10 text-green-500 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-green-500/20" title="Download Image">Download</button>
-                        </div>
-                      )}
+                      {/* Removed image results logic */}
 
                     </div>
                   </div>
@@ -480,4 +431,4 @@ Esta é uma versão teste, então inclua ao final uma sugestão de prompt de ima
   );
 };
 
-export default Generator;
+export default Video;

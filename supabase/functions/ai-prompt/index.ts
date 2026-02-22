@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { IMAGE_AGENTS, VIDEO_AGENTS } from "./agents.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -97,21 +98,39 @@ Responda APENAS com o prompt gerado, sem explicações adicionais.`;
         userMessage = `Crie um prompt de imagem IA baseado nesta descrição: ${prompt}`;
         break;
 
+      case 'generate-image-prompt':
+        systemPrompt = `Você é o conjunto de agentes KAIZEN_OMNI_HUB_V31 especializado em criação visual ULTRA-REALISTA.
+${IMAGE_AGENTS}
+
+Você deve agir de acordo com esses parâmetros e gerar blocos Markdown listando as descrições técnicas solicitadas para a geração na IA externa (Meta/Kling/Flux/Grok). Retorne NENHUMA explicação, apenas o prompt.`;
+        userMessage = `Analise e crie o prompt para cenário/ação: ${prompt}`;
+        break;
+
+      case 'generate-video-prompt':
+        systemPrompt = `Você é o conjunto de agentes KAIZEN_MASTER_ULTIMATE_OS focado em VÍDEOS.
+${VIDEO_AGENTS}
+
+Traduza qualquer solicitação em descrição para geração sequencial no Wan / Veo / Seedance.
+Respeite o character lock: "Kaizen, Brazilian face, natural green eyes, lilac hair, (small head:1.16), fitness body".
+Retorne APENAS o JSON/Markdown estruturado contendo a sequência pedida e os metadados técnicos, sem NENHUM texto conversacional.`;
+        userMessage = `Analise e crie sequências/scripts de movimento para cenas: ${prompt}`;
+        break;
+
       case 'improve':
         systemPrompt = `Você é um especialista em otimizar prompts para geração de imagens com IA.
 Melhore o prompt fornecido adicionando mais detalhes, técnicas de iluminação, estilos artísticos e qualidade.
-Mantenha a essência original mas torne-o mais profissional e detalhado.
+Mantenha a essência original mas torne - o mais profissional e detalhado.
 Responda APENAS com o prompt melhorado em inglês, sem explicações.`;
-        userMessage = `Melhore este prompt: ${prompt}`;
+        userMessage = `Melhore este prompt: ${prompt} `;
         break;
 
       case 'chat':
         systemPrompt = `Você é o KAIZEN, um assistente especializado em criar prompts para geração de imagens com IA.
 Você ajuda usuários a:
-- Criar prompts personalizados para diferentes estilos
-- Explicar técnicas de prompt engineering
-- Sugerir melhorias em prompts existentes
-- Dar dicas sobre iluminação, composição e estilos artísticos
+        - Criar prompts personalizados para diferentes estilos
+          - Explicar técnicas de prompt engineering
+            - Sugerir melhorias em prompts existentes
+              - Dar dicas sobre iluminação, composição e estilos artísticos
 
 Seja amigável, profissional e responda em português.
 Contexto do usuário: ${context || 'Nenhum contexto adicional'}`;
