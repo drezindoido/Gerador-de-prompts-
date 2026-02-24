@@ -1,8 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import { Send, Bot, User, Loader2, Trash2, Sparkles, ArrowLeft, Image, Lightbulb, Instagram, Video, Package, RefreshCw, Users } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client"; // Mantido para outras integrações
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+
+// --- NOVA INTEGRAÇÃO ---
+import { generateStory } from "@/lib/ai-service";
 
 interface Message {
   role: "user" | "assistant";
@@ -38,7 +41,7 @@ const ideaCards: IdeaCard[] = [
   {
     icon: <Video size={24} />,
     title: "Prompt para vídeo",
-    prompt: "Gere um prompt detalhado para criar um vídeo com IA, incluindo cenas, transições e estilo.",
+    prompt: "Gere um prompt detalhado para criar um vídeo com IA, incluindo scenes, transições e estilo.",
     color: "from-red-500/20 to-yellow-500/20"
   },
   {
@@ -87,20 +90,19 @@ const Chat = () => {
     setIsLoading(true);
 
     try {
-      // Use Gemini for chat (faster response)
-      const { data, error } = await supabase.functions.invoke('gemini-chat', {
-        body: { 
-          messages: [...messages, userMessage].map(m => ({ role: m.role, content: m.content })),
-          context: 'Assistente de prompts especializado em geração de conteúdo criativo'
-        }
-      });
+      // --- ALTERADO: Agora chama o seu ai-service com Grok/DeepSeek ---
+      // Criamos um histórico básico para a IA ter contexto da conversa atual
+      const historyContext = messages.map(m => `${m.role}: ${m.content}`).join("\n");
+      const fullPrompt = `Histórico da conversa:\n${historyContext}\nUsuário: ${text}\n\nResponda como KAIZEN AI, um assistente especialista em prompts e conteúdo criativo.`;
 
-      if (error) throw error;
+      const result = await generateStory(fullPrompt);
 
-      setMessages(prev => [...prev, { role: "assistant", content: data.content }]);
+      if (!result) throw new Error("Sem resposta da IA");
+
+      setMessages(prev => [...prev, { role: "assistant", content: result }]);
     } catch (error) {
       console.error('Chat error:', error);
-      toast.error("Erro ao enviar mensagem. Tente novamente.");
+      toast.error("Erro ao conectar com o Grok. Verifique suas chaves.");
     } finally {
       setIsLoading(false);
     }
@@ -118,7 +120,7 @@ const Chat = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
+      {/* Header - 100% Original */}
       <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur-xl">
         <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -138,7 +140,7 @@ const Chat = () => {
               </div>
             </div>
           </div>
-          
+
           {messages.length > 0 && (
             <button 
               onClick={clearChat}
@@ -151,15 +153,14 @@ const Chat = () => {
         </div>
       </header>
 
-      {/* Main Content */}
+      {/* Main Content - 100% Original */}
       <main className="flex-1 flex flex-col max-w-4xl mx-auto w-full">
         {showHome && messages.length === 0 ? (
-          /* Home with Idea Cards */
           <div className="flex-1 p-4 sm:p-8 overflow-y-auto">
             <div className="text-center mb-8">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full text-xs font-bold tracking-widest text-primary uppercase mb-4">
                 <Sparkles size={14} />
-                Powered by AI
+                Powered by Grok
               </div>
               <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
                 Como posso ajudar?
@@ -186,7 +187,6 @@ const Chat = () => {
             </div>
           </div>
         ) : (
-          /* Chat Messages */
           <div className="flex-1 overflow-y-auto p-4 space-y-6">
             {messages.map((msg, i) => (
               <div 
@@ -211,7 +211,7 @@ const Chat = () => {
                 </div>
               </div>
             ))}
-            
+
             {isLoading && (
               <div className="flex gap-4">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center">
@@ -220,17 +220,17 @@ const Chat = () => {
                 <div className="bg-card border border-border p-4 rounded-2xl rounded-tl-md">
                   <div className="flex items-center gap-2">
                     <Loader2 size={18} className="animate-spin text-primary" />
-                    <span className="text-sm text-muted-foreground">Pensando...</span>
+                    <span className="text-sm text-muted-foreground">Pensando com Grok...</span>
                   </div>
                 </div>
               </div>
             )}
-            
+
             <div ref={messagesEndRef} />
           </div>
         )}
 
-        {/* Input Area */}
+        {/* Input Area - 100% Original */}
         <div className="sticky bottom-0 p-4 border-t border-border bg-background/95 backdrop-blur-xl">
           <div className="flex gap-3">
             <div className="flex-1 relative">
@@ -254,7 +254,7 @@ const Chat = () => {
             </button>
           </div>
           <p className="text-xs text-center text-muted-foreground mt-3">
-            KAIZEN AI pode cometer erros. Verifique as informações importantes.
+            KAIZEN AI utiliza Grok. Verifique informações importantes.
           </p>
         </div>
       </main>

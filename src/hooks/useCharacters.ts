@@ -1,57 +1,113 @@
+import { Character } from '@/types';
+import { useState } from 'react';
 
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Character } from "@/types";
-import { toast } from "sonner";
-import { characters as fallbackCharacters } from "@/data/characters";
+// --- BIBLIOTECAS MANTIDAS ---
+export const LIGHTING_DATABASE = [
+  "GOLDEN HOUR: warm low-angle sunset sunlight, soft specular highlights, natural light wrap",
+  "RIM LIGHTING: strong backlight creating luminous edge definition, pronounced separation",
+  "NATURAL LIGHT: soft diffused window daylight, smooth tonal transitions, professionals lifestyle look",
+  "CHIAROSCURO: dramatic light falloff, strong directional key light, deep cinematic shadows",
+  "NEON NIGHT: vibrant cyberpunk highlights, harsh reflections, futuristic urban lighting"
+];
 
-export const useCharacters = () => {
-    const [characters, setCharacters] = useState<Character[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<Error | null>(null);
+export const EXPRESSIONS_DATABASE = [
+  "SMIRK: asymmetrical smile with one corner raised, confident knowing expression",
+  "POUT: lips pushed forward and slightly puckered, cute playful intensity",
+  "SMOLDER: intense seductive gaze, eyes looking up through lashes, piercing stare",
+  "DUCHENNE: genuine authentic happy smile involving mouth and eyes, crow's feet",
+  "DOE EYES: wide innocent bambi-like eyes, eyebrows slightly raised, soft look",
+  "WISTFUL: dreamy nostalgic longing look, eyes gazing off-camera, pensive mood"
+];
 
-    useEffect(() => {
-        fetchCharacters();
-    }, []);
+export const CELEBRITY_ENCOUNTERS = [
+  "Taking a rushed selfie with Cristiano Ronaldo on a football pitch, stadium lights",
+  "Standing beside LeBron James on a basketball court, arena lighting, wide angle",
+  "Spontaneous selfie with Donald Trump inside the Oval Office, official decor",
+  "Casual encounter selfie with Anitta in a luxury hotel lobby, warm ambient light",
+  "Smiling beside Ronaldinho Gaúcho on a busy street, night life vibe",
+  "A fun selfie with Neymar Jr at a VIP party, flash photography aesthetic"
+];
 
-    const fetchCharacters = async () => {
-        try {
-            const { data, error } = await supabase
-                .from("characters")
-                .select("*")
-                .order("created_at", { ascending: true });
+// --- PERSONAGENS MANTIDOS ---
+export const characters: Character[] = [
+  {
+    id: "kaizen",
+    name: "Kaizen",
+    age: 24,
+    country: "Brasil",
+    hair: "Lilás claro / roxo pastel",
+    eyes: "Verdes",
+    style: "UGC Ultra-realista",
+    desc: "Cabelo lilás característico, corpo atlético mas feminino, sardas sutis.",
+    isPremium: false,
+    rules: [
+      "Cabelo lilás claro - inegociável",
+      "Poros da pele visíveis e microtextura",
+      "Proporções naturais (sem aparência plástica de IA)",
+      "Estética de influenciadora SFW"
+    ]
+  },
+  {
+    id: "aiko",
+    name: "Aiko",
+    age: 22,
+    country: "Japão",
+    hair: "Preto azeviche, liso com franja",
+    eyes: "Castanhos profundos",
+    style: "Minimalista Suave",
+    desc: "Pequena, pele de porcelana, estilo minimalista, traços suaves.",
+    isPremium: false,
+    rules: [
+      "Cabelo preto liso com franja reta",
+      "Iluminação suave e de baixo contraste",
+      "Fundos minimalistas e limpos",
+      "Expressões reservadas e calmas"
+    ]
+  },
+  {
+    id: "sofia",
+    name: "Sofia",
+    age: 23,
+    country: "Itália",
+    hair: "Castanho avelã, ondulado",
+    eyes: "Mel",
+    style: "Mediterrâneo Clássico",
+    desc: "Cabelo castanho ondulado, pele oliva, presença confiante e calorosa.",
+    isPremium: true,
+    rules: [
+      "Cabelo castanho ondulado, volume natural",
+      "Foco na iluminação da golden hour",
+      "Guarda-roupa clássico e elegante",
+      "Calor e textura da pele visíveis"
+    ]
+  },
+  {
+    id: "luna",
+    name: "Luna",
+    age: 26,
+    country: "Espanha",
+    hair: "Expresso escuro, cacheado",
+    eyes: "Castanhos escuros",
+    style: "Ousada & Urbana",
+    desc: "Traços marcantes, cabelo escuro cacheado, visual urbano high-fashion.",
+    isPremium: true,
+    rules: [
+      "Cabelo escuro cacheado, alto volume",
+      "Maquiagem ousada ou iluminação de alto contraste",
+      "Postura forte, cenários urbanos",
+      "Definição nítida da mandíbula"
+    ]
+  }
+];
 
-            if (error) throw error;
+// --- O HOOK (ESTRUTURA QUE O GENERATOR EXIGE) ---
+function useCharacters() {
+  const [loading] = useState(false);
+  return {
+    characters,
+    loading
+  };
+}
 
-            if (data && data.length > 0) {
-                // Map Supabase snake_case to frontend camelCase if necessary.
-                // Based on our migration, columns are: is_premium (snake).
-                // Frontend expects: isPremium (camel). 
-                // We need to map it.
-
-                const mappedCharacters: Character[] = data.map((char: any) => ({
-                    ...char,
-                    isPremium: char.is_premium, // Map snake to camel
-                    desc: char.description || "", // Map DB description to frontend desc
-                    prompts: [], // Default empty array as it's not in DB yet
-                    rules: char.rules || []
-                }));
-
-                setCharacters(mappedCharacters);
-            } else {
-                // If DB is empty (shouldn't happen with migration), fallback to static
-                console.warn("No characters found in DB, using fallback");
-                setCharacters(fallbackCharacters);
-            }
-        } catch (err) {
-            console.error("Error fetching characters:", err);
-            setError(err as Error);
-            toast.error("Erro ao carregar personagens. Usando modo offline.");
-            setCharacters(fallbackCharacters); // Fallback on error
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return { characters, loading, error, refetch: fetchCharacters };
-};
+// Exportação explícita para forçar o Rollup a indexar a função
+export { useCharacters };

@@ -153,7 +153,43 @@ export const CAMERA_DATABASE = [
   }
 ];
 
-// Flattened list for the AI generator to pick randomly
+// --- NOVO: BANCO DE ILUMINAÇÃO ---
+export const LIGHTING_DATABASE = [
+  "GOLDEN HOUR: warm low-angle sunset sunlight, soft specular highlights, natural light wrap",
+  "RIM LIGHTING: strong backlight creating luminous edge definition, pronounced separation",
+  "NATURAL LIGHT: soft diffused window daylight, smooth tonal transitions, professionals lifestyle look",
+  "CHIAROSCURO: dramatic light falloff, strong directional key light, deep cinematic shadows"
+];
+
+// --- NOVO: BANCO DE EXPRESSÕES & SORRISOS ---
+export const EXPRESSIONS_DATABASE = [
+  "SMIRK: asymmetrical smile with one corner raised, confident knowing expression",
+  "SUBTLE: Mona Lisa style mysterious barely-there smile, calm and serene",
+  "COY: shy demure flirtatious smile, looking up through lashes",
+  "DUCHENNE: genuine authentic happy smile involving mouth and eyes",
+  "PROFESSIONAL: classic corporate photoshoot smile, controlled and elegant",
+  "MISCHIEVOUS: playful impish grin, teasing expression",
+  "SNEER: contemptuous upper lip curl, judgmental look",
+  "SMOLDER: intense seductive gaze, piercing confident stare",
+  "POUT: lips pushed forward, cute and playful puckered look",
+  "SQUINCH: lower eyelids slightly raised, confident engaging look",
+  "WISTFUL: dreamy nostalgic longing look, pensive mood",
+  "DOE EYES: wide innocent bambi-like eyes, vulnerable look"
+];
+
+// --- NOVO: ENCONTROS COM FAMOSOS ---
+export const CELEBRITY_ENCOUNTERS = [
+  "Selfie com LeBron James na quadra, ângulo de baixo para cima, iluminação de arena",
+  "Selfie com Cristiano Ronaldo no campo, luzes do estádio, fundo gramado",
+  "Selfie com Will Smith em uma rua da Califórnia, luz do dia natural",
+  "Selfie com Donald Trump no Salão Oval, luz interna oficial",
+  "Selfie com o elenco de Stranger Things no set de filmagem, luz de estúdio",
+  "Selfie com Leonardo DiCaprio no aeroporto, iluminação interna de terminal",
+  "Selfie com Michael Jackson no palco, luzes de show coloridas",
+  "Selfie com Anitta no lobby de um hotel, iluminação ambiente suave",
+  "Selfie com Ronaldinho Gaúcho na rua da cidade, luz de postes e neon"
+];
+
 export const CAMERA_STYLES = CAMERA_DATABASE.flatMap(cat => cat.items);
 
 export const OUTFITS = [
@@ -201,10 +237,10 @@ const FACIAL_FEATURES = [
 export const generateRandomCharacter = (): Omit<Character, 'id' | 'isPremium' | 'rules'> => {
   const pick = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
   const age = Math.floor(Math.random() * (35 - 19 + 1)) + 19;
-  
+
   const body = pick(BODY_TYPES);
   const face = pick(FACIAL_FEATURES);
-  
+
   const desc = `${body}, ${face}. Pele com textura natural e realista.`;
 
   return {
@@ -289,7 +325,6 @@ export const CHARACTERS: Character[] = [
   }
 ];
 
-// Cleaned up DNA base to reduce artifacts
 export const DNA_BASE = "Raw photo, realistic natural skin texture, soft lighting, high fidelity, 8k, unedited, SFW.";
 
 export const generateDynamicPrompt = (character: Character, location: string, camera: string, outfit: string): string => {
@@ -308,7 +343,6 @@ export const generateDynamicPrompt = (character: Character, location: string, ca
   Style: ${DNA_BASE}`;
 };
 
-// --- Marketplace Data ---
 class SeededRNG {
   private seed: number;
   constructor(seed: number) { this.seed = seed; }
@@ -324,7 +358,7 @@ export const generatePromptsForCharacter = (char: Character, seedOffset: number 
   const rng = new SeededRNG(424242 + seedOffset + char.name.length);
   const getStableRandom = <T>(arr: T[]): T => arr[Math.floor(rng.next() * arr.length)];
   const getStableIndex = (max: number): number => Math.floor(rng.next() * max);
-  
+
   const newPrompts: Prompt[] = [];
   const PER_CATEGORY = 6;
 
@@ -332,7 +366,7 @@ export const generatePromptsForCharacter = (char: Character, seedOffset: number 
     for (let i = 0; i < PER_CATEGORY; i++) {
       const outfit = getStableRandom(OUTFITS);
       const camera = getStableRandom(CAMERA_STYLES); 
-      
+
       let baseAction = "";
       switch(cat) {
         case 'Selfie': baseAction = "tirando uma selfie no espelho mostrando o corpo todo"; break;
@@ -346,20 +380,24 @@ export const generatePromptsForCharacter = (char: Character, seedOffset: number 
 
       const moods = ["confiante", "serena", "pensativa", "alegre"];
       const mood = moods[getStableIndex(moods.length)];
-      const lightings = ["luz natural suave", "iluminação dourada de fim de tarde", "luz fria e moderna", "iluminação de contraste cinematográfico"];
-      const lighting = lightings[getStableIndex(lightings.length)];
-      const description = `${char.name} ${baseAction}, vestindo ${outfit.toLowerCase()}. Câmera: ${camera.split(',')[0]}.`;
       
+      // Adicionado sorteio das novas iluminações e expressões na descrição automática
+      const lighting = getStableRandom(LIGHTING_DATABASE).split(':')[0];
+      const expression = getStableRandom(EXPRESSIONS_DATABASE).split(':')[0];
+
+      const description = `${char.name} ${baseAction}, vestindo ${outfit.toLowerCase()}. Expressão ${expression.toLowerCase()} sob ${lighting.toLowerCase()}. Câmera: ${camera.split(',')[0]}.`;
+
       const fullPrompt = `Ultra-photorealistic lifestyle photograph of ${char.name}, ${char.age} years old from ${char.country}. 
       Visuals: ${char.desc}, ${char.hair}, ${char.eyes} eyes. 
       Action: ${baseAction}. 
       Outfit: ${outfit}. 
+      Expression: ${expression}.
       Location: ${cat} setting (visible environment). 
       Camera: ${camera}. 
       Style: ${DNA_BASE} Mood: ${mood}. Lighting: ${lighting}.`;
 
       const id = `${char.id}-${cat.toLowerCase()}-${i}`;
-      
+
       newPrompts.push({
         id,
         title: `${char.name} ${cat} #${i+1}`,
@@ -375,7 +413,6 @@ export const generatePromptsForCharacter = (char: Character, seedOffset: number 
   return newPrompts;
 };
 
-// Initial Generation
 const initialPrompts: Prompt[] = [];
 CHARACTERS.forEach(char => {
   initialPrompts.push(...generatePromptsForCharacter(char));

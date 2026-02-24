@@ -1,28 +1,40 @@
-<!doctype html>
-<html lang="en">
 
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- TODO: Set the document title to the name of your application -->
-  <title>KaizenPrompts</title>
-  <meta name="description" content="Kaizen Prompts - Gerador de Prompts Profissionais com IA" />
-  <meta name="author" content="Kaizen" />
-
-  <!-- TODO: Update og:title to match your application name -->
-  <meta property="og:title" content="KaizenPrompts" />
-  <meta property="og:description" content="Kaizen Prompts - Gerador de Prompts Profissionais com IA" />
-  <meta property="og:type" content="website" />
-  <meta property="og:image" content="/og-image.png" />
-
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:site" content="@KaizenPrompts" />
-  <meta name="twitter:image" content="/og-image.png" />
+  <title>KAIZEN ENGINE v5.0</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #050505;
+      color: #e5e7eb;
+    }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #111; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #444; }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+  </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.40.0",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@^2.45.4"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
 </head>
-
 <body>
   <div id="root"></div>
-  <script type="module" src="/src/main.tsx"></script>
+<script type="module" src="/index.tsx"></script>
 </body>
-
 </html>
