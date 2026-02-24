@@ -48,7 +48,9 @@ const ALL_MODELS = [
   "qwen/qwen2.5-7b-instruct:free",
   "qwen/qwq-32b:free",
 
-  // --- Nvidia ---
+  // --- NVIDIA (incluindo multimodal VL) ---
+  "nvidia/nemotron-nano-12b-v2-vl:free",    // ✅ Multimodal — suporta imagem + texto
+  "nvidia/nemotron-nano-9b-v2:free",
   "nvidia/llama-3.1-nemotron-70b-instruct:free",
   "nvidia/nemotron-3-nano-30b-a3b:free",
 
@@ -132,15 +134,17 @@ class ModelManager {
         },
         body: JSON.stringify({
           model,
-          messages: [{ role: "user", content: "Reply with only: OK" }],
-          max_tokens: 5,
+          messages: [{ role: "user", content: "Reply with only the word: OK" }],
+          max_tokens: 60, // Modelos com reasoning (Nemotron VL) precisam de mais tokens
         }),
-        signal: AbortSignal.timeout(8000),
+        signal: AbortSignal.timeout(15000), // 15s para modelos VL/reasoning
       });
 
       const data = await response.json();
       const latency = Date.now() - start;
-      const working = !!data.choices?.[0]?.message?.content;
+      // Aceita tanto content direto quanto conteúdo gerado após reasoning (Nemotron VL)
+      const hasContent = !!(data.choices?.[0]?.message?.content || data.choices?.[0]?.message?.reasoning);
+      const working = hasContent && !data.error;
 
       const result = { model, working, latency: working ? latency : -1, lastChecked: Date.now() };
       this.health.set(model, result);
