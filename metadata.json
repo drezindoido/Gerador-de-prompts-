@@ -1,7 +1,0 @@
-{
-  "name": "Copy of MOTOR KAIZEN v5.0",
-  "description": "Gerador de personagens e mecanismo de reconstrução de imagem ultra-realista com a identidade Kaizen.",
-  "requestFramePermissions": [
-    "camera"
-  ]
-}
